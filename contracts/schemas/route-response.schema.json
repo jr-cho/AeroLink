@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aerolink.dev/schemas/route-response.schema.json",
+  "title": "Route response",
+  "description": "Ranked route options (max 3) answering a route request, or an explanation when none is available.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "message_id",
+    "request_id",
+    "aircraft_id",
+    "timestamp",
+    "revision",
+    "status",
+    "error",
+    "method",
+    "forecaster",
+    "priority",
+    "forecast_time",
+    "expires_at",
+    "graph_version",
+    "constraints_cycle",
+    "briefing",
+    "routes"
+  ],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schema_version" },
+    "message_id": { "$ref": "common.schema.json#/$defs/uuid" },
+    "request_id": { "$ref": "common.schema.json#/$defs/uuid" },
+    "aircraft_id": { "$ref": "common.schema.json#/$defs/aircraft_id" },
+    "timestamp": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "revision": { "type": "integer", "minimum": 0 },
+    "status": { "enum": ["ok", "no_route", "rejected", "error"] },
+    "error": { "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }] },
+    "method": { "enum": ["classical", "aerolink"] },
+    "forecaster": { "type": "string", "minLength": 1 },
+    "priority": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "forecast_time": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "expires_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "graph_version": { "type": "string", "minLength": 1 },
+    "constraints_cycle": { "type": "string", "minLength": 1 },
+    "briefing": { "oneOf": [{ "type": "string" }, { "type": "null" }] },
+    "routes": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "route_id",
+          "rank",
+          "distance_m",
+          "est_time_s",
+          "expected_hold_s",
+          "conflict_probability",
+          "cost_terms",
+          "reason",
+          "intent",
+          "waypoints"
+        ],
+        "properties": {
+          "route_id": { "$ref": "common.schema.json#/$defs/uuid" },
+          "rank": { "type": "integer", "minimum": 1, "maximum": 3 },
+          "distance_m": { "type": "number", "minimum": 0 },
+          "est_time_s": { "type": "number", "minimum": 0 },
+          "expected_hold_s": { "type": "number", "minimum": 0 },
+          "conflict_probability": { "type": "number", "minimum": 0, "maximum": 1 },
+          "cost_terms": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["est_time_s", "expected_hold_s", "mu", "conflict_probability"],
+            "properties": {
+              "est_time_s": { "type": "number", "minimum": 0 },
+              "expected_hold_s": { "type": "number", "minimum": 0 },
+              "mu": { "type": "number", "minimum": 0 },
+              "conflict_probability": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          },
+          "reason": { "type": "string", "minLength": 1 },
+          "intent": {
+            "type": "array",
+            "minItems": 1,
+            "description": "Per-node timing windows. time_start and time_end are the calibrated p10 and p90 bounds of arrival (ASTM F3548 naming); eta_p50 is the median.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["node", "time_start", "eta_p50", "time_end"],
+              "properties": {
+                "node": { "$ref": "common.schema.json#/$defs/node_id" },
+                "time_start": { "$ref": "common.schema.json#/$defs/timestamp" },
+                "eta_p50": { "$ref": "common.schema.json#/$defs/timestamp" },
+                "time_end": { "$ref": "common.schema.json#/$defs/timestamp" }
+              }
+            }
+          },
+          "waypoints": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "array",
+              "prefixItems": [
+                { "$ref": "common.schema.json#/$defs/lat" },
+                { "$ref": "common.schema.json#/$defs/lon" },
+                { "$ref": "common.schema.json#/$defs/alt_msl_m" }
+              ],
+              "items": false,
+              "minItems": 3
+            }
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "ok" } }, "required": ["status"] },
+      "then": { "properties": { "error": { "type": "null" }, "routes": { "minItems": 1 } } },
+      "else": { "properties": { "error": { "type": "string", "minLength": 1 }, "routes": { "maxItems": 0 } } }
+    }
+  ]
+}

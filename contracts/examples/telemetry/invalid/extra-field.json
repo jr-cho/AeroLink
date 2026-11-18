@@ -1,0 +1,25 @@
+{
+  "schema_version": "3.0",
+  "message_id": "6f1c2a4e-8b3d-4c1a-9e2f-0a1b2c3d4e5f",
+  "aircraft_id": "dev-001",
+  "mission": "medical",
+  "timestamp": "2026-11-17T15:00:00Z",
+  "position": {
+    "lat": 28.0395,
+    "lon": -81.9498,
+    "alt_msl_m": 60.0
+  },
+  "motion": {
+    "ground_speed_mps": 0.0,
+    "course_deg": 0.0,
+    "vertical_speed_mps": 0.0
+  },
+  "fix": {
+    "type": "3d",
+    "hdop": 0.9,
+    "satellites": 11,
+    "replayed": false
+  },
+  "active_intent_id": null,
+  "speed": 10
+}

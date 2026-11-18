@@ -1,0 +1,9 @@
+{
+  "schema_version": "3.0",
+  "message_id": "00000001-1111-4222-8333-000000000001",
+  "request_id": "00000002-1111-4222-8333-000000000002",
+  "aircraft_id": "dev-001",
+  "mission": "tourism",
+  "timestamp": "2026-11-17T15:00:00Z",
+  "destination_node": "hp-tgh"
+}

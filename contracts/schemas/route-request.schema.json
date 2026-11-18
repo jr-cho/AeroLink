@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aerolink.dev/schemas/route-request.schema.json",
+  "title": "Route request",
+  "description": "Request for a route from the aircraft's current position to a destination node.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "message_id",
+    "request_id",
+    "aircraft_id",
+    "mission",
+    "timestamp",
+    "destination_node"
+  ],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schema_version" },
+    "message_id": { "$ref": "common.schema.json#/$defs/uuid" },
+    "request_id": { "$ref": "common.schema.json#/$defs/uuid" },
+    "aircraft_id": { "$ref": "common.schema.json#/$defs/aircraft_id" },
+    "mission": { "$ref": "common.schema.json#/$defs/mission" },
+    "timestamp": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "destination_node": { "$ref": "common.schema.json#/$defs/node_id" }
+  }
+}
