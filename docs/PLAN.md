@@ -66,12 +66,12 @@ Set up the repo structure and automated testing so every later epic has a place 
 Define the five messages exchanged between the device, simulator, and backend, so all components are built against the same formats.
 
 **Stories**
-- [ ] Write JSON Schemas (v3.0): telemetry, route request, route response, intent, intent status
-- [ ] Align intent fields and states with ASTM F3548 (accepted, activated, nonconforming, contingent, ended), using the InterUSS repositories as the naming reference
-- [ ] Add one valid example per schema
-- [ ] Add invalid examples covering common mistakes (missing fields, wrong types, bad enums)
-- [ ] Add contract tests in Python (with format checking for UUIDs and timestamps enabled)
-- [ ] Generate or hand-write Pydantic models that match the schemas, with a test that they agree
+- [x] Write JSON Schemas (v3.0): telemetry, route request, route response, intent, intent status
+- [x] Align intent fields and states with ASTM F3548 (accepted, activated, nonconforming, contingent, ended), using the InterUSS repositories as the naming reference
+- [x] Add one valid example per schema
+- [x] Add invalid examples covering common mistakes (missing fields, wrong types, bad enums)
+- [x] Add contract tests in Python (with format checking for UUIDs and timestamps enabled)
+- [x] Generate or hand-write Pydantic models that match the schemas, with a test that they agree
 
 **Acceptance criteria**
 - All valid examples pass and all invalid examples fail
