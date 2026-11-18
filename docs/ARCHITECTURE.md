@@ -141,6 +141,7 @@ Source file: `airspace/central-fl-v1.geojson` (hand-authored nodes and corridors
 - **Fleet:** 10 simulated aircraft, plus the physical device as an 11th.
 - **Range:** a modeling parameter, default 160 km including reserve. Every route must be within range; that is a hard constraint.
 - **Speeds:** parameters for simulation only, not tied to any specific aircraft type.
+- **Priority value:** the `priority` field in route responses (§12.2) is derived from the mission: medical 100, passenger 50, cargo 20. A greater value means higher priority, as in ASTM F3548.
 
 ---
 
@@ -561,9 +562,12 @@ The origin is the latest accepted fix, snapped to the nearest landing node or wa
   "message_id": "…",
   "request_id": "…",
   "aircraft_id": "dev-001",
+  "timestamp": "2026-11-17T15:00:05Z",
   "revision": 0,
   "status": "ok",
+  "error": null,
   "method": "aerolink",
+  "priority": 100,
   "forecast_time": "2026-11-17T15:00:05Z",
   "expires_at": "2026-11-17T15:01:05Z",
   "forecaster": "aerolink-gbm@1.0",
@@ -574,15 +578,15 @@ The origin is the latest accepted fix, snapped to the nearest landing node or wa
     {
       "route_id": "…",
       "rank": 1,
-      "distance_m": 74000,
-      "est_time_s": 1140,
+      "distance_m": 51300,
+      "est_time_s": 789,
       "expected_hold_s": 30,
       "conflict_probability": 0.04,
-      "cost_terms": { "est_time_s": 1140, "expected_hold_s": 30, "mu": 600, "conflict_probability": 0.04 },
+      "cost_terms": { "est_time_s": 789, "expected_hold_s": 30, "mu": 600, "conflict_probability": 0.04 },
       "reason": "avoids predicted landing queue at hp-tgh 15:30–15:34",
       "intent": [
-        { "node": "wp-lakeland", "eta_p10": "…", "eta_p50": "…", "eta_p90": "…" },
-        { "node": "hp-tgh", "eta_p10": "…", "eta_p50": "…", "eta_p90": "…" }
+        { "node": "wp-lakeland", "time_start": "2026-11-17T15:02:00Z", "eta_p50": "2026-11-17T15:02:30Z", "time_end": "2026-11-17T15:03:00Z" },
+        { "node": "hp-tgh", "time_start": "2026-11-17T15:14:39Z", "eta_p50": "2026-11-17T15:15:39Z", "time_end": "2026-11-17T15:17:09Z" }
       ],
       "waypoints": [[28.0395, -81.9498, 300.0], [27.94, -82.46, 300.0]]
     }
@@ -612,7 +616,9 @@ The origin is the latest accepted fix, snapped to the nearest landing node or wa
   "schema_version": "3.0",
   "message_id": "…",
   "aircraft_id": "dev-001",
+  "timestamp": "2026-11-17T15:00:12Z",
   "intent_id": "…",
+  "request_id": "…",
   "status": "accepted",
   "reason": null
 }

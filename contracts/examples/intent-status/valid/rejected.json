@@ -1,0 +1,10 @@
+{
+  "schema_version": "3.0",
+  "message_id": "0000000b-1111-4222-8333-00000000000b",
+  "aircraft_id": "dev-001",
+  "timestamp": "2026-11-17T15:00:31Z",
+  "intent_id": "00000006-1111-4222-8333-000000000006",
+  "request_id": "00000002-1111-4222-8333-000000000002",
+  "status": "rejected",
+  "reason": "Route expired before intent was received"
+}

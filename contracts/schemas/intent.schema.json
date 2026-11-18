@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aerolink.dev/schemas/intent.schema.json",
+  "title": "Intent",
+  "description": "Pilot's selection of a route from a route response.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "message_id", "request_id", "aircraft_id", "timestamp", "route_id"],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schema_version" },
+    "message_id": { "$ref": "common.schema.json#/$defs/uuid" },
+    "request_id": { "$ref": "common.schema.json#/$defs/uuid" },
+    "aircraft_id": { "$ref": "common.schema.json#/$defs/aircraft_id" },
+    "timestamp": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "route_id": { "$ref": "common.schema.json#/$defs/uuid" }
+  }
+}

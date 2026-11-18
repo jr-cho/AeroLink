@@ -1,0 +1,19 @@
+{
+  "schema_version": "3.0",
+  "message_id": "8d0f7780-8536-41ef-a55c-f18ad2a01bf8",
+  "request_id": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+  "aircraft_id": "dev-001",
+  "timestamp": "2026-11-17T15:00:05Z",
+  "revision": 0,
+  "status": "no_route",
+  "error": "no feasible route: hp-tgh closed by TFR until 16:00",
+  "method": "aerolink",
+  "forecaster": "aerolink-gbm@1.0",
+  "priority": 100,
+  "forecast_time": "2026-11-17T15:00:05Z",
+  "expires_at": "2026-11-17T15:01:05Z",
+  "graph_version": "central-fl-v1",
+  "constraints_cycle": "FAA ADDS 2026-11",
+  "briefing": null,
+  "routes": []
+}

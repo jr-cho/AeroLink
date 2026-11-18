@@ -51,11 +51,11 @@ M7 has no dependencies and can run in parallel with M1–M6.
 Set up the repo structure and automated testing so every later epic has a place to land.
 
 **Stories**
-- [ ] Create the folder layout defined in the README
-- [ ] Initialize the Python project in `backend/` (uv), package `aerolink`
-- [ ] Initialize the web page project in `web/` (Vite + TypeScript)
-- [ ] Add a CI workflow that runs `pytest` on every push
-- [ ] Add `.env.example` and `.gitignore` (including `backend/data/realdata/`)
+- [x] Create the folder layout defined in the README
+- [x] Initialize the Python project in `backend/` (uv), package `aerolink`
+- [x] Initialize the web page project in `web/` (Vite + TypeScript)
+- [x] Add a CI workflow that runs `pytest` on every push
+- [x] Add `.env.example` and `.gitignore` (including `backend/data/realdata/`)
 
 **Acceptance criteria**
 - A fresh clone builds and tests pass with documented commands
@@ -426,6 +426,7 @@ The Python service layer (FastAPI + aiomqtt) that ingests telemetry, holds the i
 - [ ] Handle the device flow: route request → response → intent → intent status
 - [ ] Database migrations (e.g. Alembic) and storage
 - [ ] Public API (ARCHITECTURE §11.1)
+- [ ] Message rule checks the schema can't express: time_start ≤ eta_p50 ≤ time_end, forecast_time < expires_at, unique ranks 1..n, unique route_ids, with their own tests
 
 **Acceptance criteria**
 - The full device flow works using a test MQTT client

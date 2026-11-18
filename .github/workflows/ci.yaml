@@ -1,0 +1,42 @@
+# Sources:
+# - uv setup action (inputs, caching, `uv sync` / `uv run`):
+#     https://github.com/astral-sh/setup-uv
+# - Checkout action:
+#     https://github.com/actions/checkout
+# - Workflow syntax (on, concurrency, defaults.run.working-directory, jobs):
+#     https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel an older run on the same branch when a new commit arrives.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (Python)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          working-directory: backend        # finds pyproject.toml and .python-version here
+          enable-cache: true
+          cache-dependency-glob: uv.lock    # relative to working-directory above
+
+      - name: Install dependencies
+        run: uv sync --locked               # fails if uv.lock is out of date
+
+      - name: Run tests
+        run: uv run pytest

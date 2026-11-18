@@ -1,0 +1,11 @@
+{
+  "schema_version": "3.0",
+  "message_id": "00000005-1111-4222-8333-000000000005",
+  "aircraft_id": "dev-001",
+  "timestamp": "2026-11-17T15:00:31Z",
+  "intent_id": "00000006-1111-4222-8333-000000000006",
+  "request_id": "00000002-1111-4222-8333-000000000002",
+  "status": "accepted",
+  "reason": null,
+  "extra": "x"
+}

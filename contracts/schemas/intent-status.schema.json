@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aerolink.dev/schemas/intent-status.schema.json",
+  "title": "Intent status",
+  "description": "Lifecycle status update for an intent.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "message_id",
+    "aircraft_id",
+    "timestamp",
+    "intent_id",
+    "request_id",
+    "status",
+    "reason"
+  ],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schema_version" },
+    "message_id": { "$ref": "common.schema.json#/$defs/uuid" },
+    "aircraft_id": { "$ref": "common.schema.json#/$defs/aircraft_id" },
+    "timestamp": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "intent_id": { "$ref": "common.schema.json#/$defs/uuid" },
+    "request_id": { "$ref": "common.schema.json#/$defs/uuid" },
+    "status": {
+      "enum": ["accepted", "activated", "nonconforming", "contingent", "ended", "rejected", "superseded"]
+    },
+    "reason": { "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }] }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "status": { "enum": ["rejected", "superseded", "nonconforming", "contingent"] } },
+        "required": ["status"]
+      },
+      "then": { "properties": { "reason": { "type": "string", "minLength": 1 } } }
+    }
+  ]
+}

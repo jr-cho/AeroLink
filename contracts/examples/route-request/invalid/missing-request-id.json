@@ -1,0 +1,8 @@
+{
+  "schema_version": "3.0",
+  "message_id": "00000001-1111-4222-8333-000000000001",
+  "aircraft_id": "dev-001",
+  "mission": "medical",
+  "timestamp": "2026-11-17T15:00:00Z",
+  "destination_node": "hp-tgh"
+}
