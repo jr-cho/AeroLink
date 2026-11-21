@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aerolink.dev/schemas/traffic.schema.json",
+  "title": "Traffic",
+  "description": "Nearby aircraft and traffic levels for one device, every 5 s.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "message_id",
+    "aircraft_id",
+    "forecast_time",
+    "aircraft",
+    "edges"
+  ],
+  "properties": {
+    "schema_version": {
+      "$ref": "common.schema.json#/$defs/schema_version"
+    },
+    "message_id": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "aircraft_id": {
+      "$ref": "common.schema.json#/$defs/aircraft_id"
+    },
+    "forecast_time": {
+      "$ref": "common.schema.json#/$defs/timestamp"
+    },
+    "aircraft": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "vehicle_type",
+          "lat",
+          "lon",
+          "alt_msl_m",
+          "course_deg",
+          "off_route"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "common.schema.json#/$defs/aircraft_id"
+          },
+          "vehicle_type": {
+            "$ref": "common.schema.json#/$defs/vehicle_type"
+          },
+          "lat": {
+            "$ref": "common.schema.json#/$defs/lat"
+          },
+          "lon": {
+            "$ref": "common.schema.json#/$defs/lon"
+          },
+          "alt_msl_m": {
+            "$ref": "common.schema.json#/$defs/alt_msl_m"
+          },
+          "course_deg": {
+            "$ref": "common.schema.json#/$defs/course_deg"
+          },
+          "off_route": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "edge",
+          "now",
+          "in_15_min",
+          "in_30_min"
+        ],
+        "properties": {
+          "edge": {
+            "type": "string",
+            "pattern": "^[a-z]{2}-[a-z0-9-]+->[a-z]{2}-[a-z0-9-]+$"
+          },
+          "now": {
+            "$ref": "common.schema.json#/$defs/traffic_level"
+          },
+          "in_15_min": {
+            "$ref": "common.schema.json#/$defs/traffic_level"
+          },
+          "in_30_min": {
+            "$ref": "common.schema.json#/$defs/traffic_level"
+          }
+        }
+      }
+    }
+  }
+}

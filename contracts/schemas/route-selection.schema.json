@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aerolink.dev/schemas/route-selection.schema.json",
+  "title": "Route selection",
+  "description": "The option the pilot picked.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "message_id",
+    "request_id",
+    "aircraft_id",
+    "route_id",
+    "timestamp"
+  ],
+  "properties": {
+    "schema_version": {
+      "$ref": "common.schema.json#/$defs/schema_version"
+    },
+    "message_id": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "request_id": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "aircraft_id": {
+      "$ref": "common.schema.json#/$defs/aircraft_id"
+    },
+    "route_id": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "timestamp": {
+      "$ref": "common.schema.json#/$defs/timestamp"
+    }
+  }
+}

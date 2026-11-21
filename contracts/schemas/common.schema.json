@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aerolink.dev/schemas/common.schema.json",
+  "title": "AeroLink shared definitions (v4.0)",
+  "$defs": {
+    "schema_version": {
+      "const": "4.0"
+    },
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "aircraft_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,31}$"
+    },
+    "vehicle_type": {
+      "enum": [
+        "passenger",
+        "medical"
+      ]
+    },
+    "lat": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "lon": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "alt_msl_m": {
+      "type": "number",
+      "minimum": -100,
+      "maximum": 10000
+    },
+    "course_deg": {
+      "type": "number",
+      "minimum": 0,
+      "exclusiveMaximum": 360
+    },
+    "node_id": {
+      "type": "string",
+      "pattern": "^[a-z]{2}-[a-z0-9-]+$"
+    },
+    "traffic_level": {
+      "enum": [
+        "low",
+        "moderate",
+        "heavy"
+      ]
+    }
+  }
+}

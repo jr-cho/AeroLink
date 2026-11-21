@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aerolink.dev/schemas/route-response.schema.json",
+  "title": "Route response",
+  "description": "Route options for a request. revision > 0 is an en-route suggestion. Advisory only.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "message_id",
+    "request_id",
+    "aircraft_id",
+    "revision",
+    "status",
+    "method",
+    "forecast_time",
+    "expires_at",
+    "forecaster",
+    "graph_version",
+    "constraints_cycle",
+    "summary",
+    "reason",
+    "routes"
+  ],
+  "properties": {
+    "schema_version": {
+      "$ref": "common.schema.json#/$defs/schema_version"
+    },
+    "message_id": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "request_id": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "aircraft_id": {
+      "$ref": "common.schema.json#/$defs/aircraft_id"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "no_route",
+        "error"
+      ]
+    },
+    "method": {
+      "enum": [
+        "classical",
+        "aerolink"
+      ]
+    },
+    "forecast_time": {
+      "$ref": "common.schema.json#/$defs/timestamp"
+    },
+    "expires_at": {
+      "$ref": "common.schema.json#/$defs/timestamp"
+    },
+    "forecaster": {
+      "type": "string",
+      "minLength": 1
+    },
+    "graph_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "constraints_cycle": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "summary": {
+      "oneOf": [
+        {
+          "type": "string",
+          "maxLength": 400
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reason": {
+      "oneOf": [
+        {
+          "type": "string",
+          "maxLength": 200
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "routes": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "route_id",
+          "rank",
+          "label",
+          "distance_m",
+          "est_time_s",
+          "expected_wait_s",
+          "bunching_risk",
+          "traffic",
+          "cost_terms",
+          "reason",
+          "eta",
+          "waypoints"
+        ],
+        "properties": {
+          "route_id": {
+            "$ref": "common.schema.json#/$defs/uuid"
+          },
+          "rank": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          },
+          "label": {
+            "enum": [
+              "fastest",
+              "alternative"
+            ]
+          },
+          "distance_m": {
+            "type": "number",
+            "minimum": 0
+          },
+          "est_time_s": {
+            "type": "number",
+            "minimum": 0
+          },
+          "expected_wait_s": {
+            "type": "number",
+            "minimum": 0
+          },
+          "bunching_risk": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "traffic": {
+            "$ref": "common.schema.json#/$defs/traffic_level"
+          },
+          "cost_terms": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "est_time_s",
+              "expected_wait_s",
+              "mu",
+              "bunching_risk"
+            ],
+            "properties": {
+              "est_time_s": {
+                "type": "number",
+                "minimum": 0
+              },
+              "expected_wait_s": {
+                "type": "number",
+                "minimum": 0
+              },
+              "mu": {
+                "type": "number",
+                "minimum": 0
+              },
+              "bunching_risk": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "eta": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "node",
+                "eta_p10",
+                "eta_p50",
+                "eta_p90"
+              ],
+              "properties": {
+                "node": {
+                  "$ref": "common.schema.json#/$defs/node_id"
+                },
+                "eta_p10": {
+                  "$ref": "common.schema.json#/$defs/timestamp"
+                },
+                "eta_p50": {
+                  "$ref": "common.schema.json#/$defs/timestamp"
+                },
+                "eta_p90": {
+                  "$ref": "common.schema.json#/$defs/timestamp"
+                }
+              }
+            }
+          },
+          "waypoints": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "$ref": "common.schema.json#/$defs/lat"
+                },
+                {
+                  "$ref": "common.schema.json#/$defs/lon"
+                },
+                {
+                  "$ref": "common.schema.json#/$defs/alt_msl_m"
+                }
+              ],
+              "items": false,
+              "minItems": 3
+            }
+          }
+        }
+      }
+    }
+  },
+  "if": {
+    "properties": {
+      "status": {
+        "const": "ok"
+      }
+    }
+  },
+  "then": {
+    "properties": {
+      "routes": {
+        "minItems": 1
+      }
+    }
+  },
+  "else": {
+    "properties": {
+      "routes": {
+        "maxItems": 0
+      },
+      "reason": {
+        "type": "string"
+      }
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aerolink.dev/schemas/flight-status.schema.json",
+  "title": "Flight status",
+  "description": "Status of a planned flight (ARCHITECTURE \u00a712.3).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "message_id",
+    "aircraft_id",
+    "flight_id",
+    "status",
+    "reason",
+    "timestamp"
+  ],
+  "properties": {
+    "schema_version": {
+      "$ref": "common.schema.json#/$defs/schema_version"
+    },
+    "message_id": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "aircraft_id": {
+      "$ref": "common.schema.json#/$defs/aircraft_id"
+    },
+    "flight_id": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "status": {
+      "enum": [
+        "planned",
+        "active",
+        "off_route",
+        "replaced",
+        "ended"
+      ]
+    },
+    "reason": {
+      "oneOf": [
+        {
+          "type": "string",
+          "maxLength": 200
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "timestamp": {
+      "$ref": "common.schema.json#/$defs/timestamp"
+    }
+  }
+}

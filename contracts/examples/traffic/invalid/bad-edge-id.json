@@ -1,0 +1,25 @@
+{
+  "schema_version": "4.0",
+  "message_id": "6f1c2a4e-8b3d-4c1a-9e2f-0a1b2c3d4e5f",
+  "aircraft_id": "dev-001",
+  "forecast_time": "2026-11-17T15:00:05Z",
+  "aircraft": [
+    {
+      "id": "sim-003",
+      "vehicle_type": "passenger",
+      "lat": 28.05,
+      "lon": -81.8,
+      "alt_msl_m": 610.0,
+      "course_deg": 270.0,
+      "off_route": false
+    }
+  ],
+  "edges": [
+    {
+      "edge": "lakeland to plant city",
+      "now": "moderate",
+      "in_15_min": "heavy",
+      "in_30_min": "moderate"
+    }
+  ]
+}

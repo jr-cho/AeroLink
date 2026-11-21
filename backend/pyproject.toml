@@ -1,0 +1,29 @@
+[project]
+name = "aerolink"
+version = "0.1.0"
+description = "AeroLink: navigation for Florida's low-altitude air corridors with AI traffic prediction"
+requires-python = ">=3.12"
+dependencies = [
+    "jsonschema>=4.26.0",
+    "networkx>=3.7",
+    "pydantic>=2.9",
+    "pyogrio>=0.13.0",
+    "pyproj>=3.8.0",
+    "pyyaml>=6.0.4",
+    "referencing>=0.37.0",
+    "rfc3339-validator>=0.1.4",
+    "shapely>=2.2.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.32,<0.12.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "ty>=0.0.107",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

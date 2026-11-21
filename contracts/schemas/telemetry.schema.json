@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aerolink.dev/schemas/telemetry.schema.json",
+  "title": "Telemetry",
+  "description": "1 Hz position report from an aircraft (device or simulator).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "message_id",
+    "aircraft_id",
+    "vehicle_type",
+    "timestamp",
+    "position",
+    "motion",
+    "fix",
+    "active_flight_id"
+  ],
+  "properties": {
+    "schema_version": {
+      "$ref": "common.schema.json#/$defs/schema_version"
+    },
+    "message_id": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "aircraft_id": {
+      "$ref": "common.schema.json#/$defs/aircraft_id"
+    },
+    "vehicle_type": {
+      "$ref": "common.schema.json#/$defs/vehicle_type"
+    },
+    "timestamp": {
+      "$ref": "common.schema.json#/$defs/timestamp"
+    },
+    "position": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lat",
+        "lon",
+        "alt_msl_m"
+      ],
+      "properties": {
+        "lat": {
+          "$ref": "common.schema.json#/$defs/lat"
+        },
+        "lon": {
+          "$ref": "common.schema.json#/$defs/lon"
+        },
+        "alt_msl_m": {
+          "$ref": "common.schema.json#/$defs/alt_msl_m"
+        }
+      }
+    },
+    "motion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ground_speed_mps",
+        "course_deg",
+        "vertical_speed_mps"
+      ],
+      "properties": {
+        "ground_speed_mps": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 150
+        },
+        "course_deg": {
+          "$ref": "common.schema.json#/$defs/course_deg"
+        },
+        "vertical_speed_mps": {
+          "type": "number",
+          "minimum": -50,
+          "maximum": 50
+        }
+      }
+    },
+    "fix": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "hdop",
+        "satellites",
+        "replayed"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "none",
+            "2d",
+            "3d"
+          ]
+        },
+        "hdop": {
+          "type": "number",
+          "minimum": 0
+        },
+        "satellites": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 64
+        },
+        "replayed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "active_flight_id": {
+      "oneOf": [
+        {
+          "$ref": "common.schema.json#/$defs/uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aerolink.dev/schemas/route-request.schema.json",
+  "title": "Route request",
+  "description": "A pilot asks for routes to a destination.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "message_id",
+    "request_id",
+    "aircraft_id",
+    "vehicle_type",
+    "timestamp",
+    "destination_node"
+  ],
+  "properties": {
+    "schema_version": {
+      "$ref": "common.schema.json#/$defs/schema_version"
+    },
+    "message_id": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "request_id": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "aircraft_id": {
+      "$ref": "common.schema.json#/$defs/aircraft_id"
+    },
+    "vehicle_type": {
+      "$ref": "common.schema.json#/$defs/vehicle_type"
+    },
+    "timestamp": {
+      "$ref": "common.schema.json#/$defs/timestamp"
+    },
+    "destination_node": {
+      "$ref": "common.schema.json#/$defs/node_id"
+    }
+  }
+}
