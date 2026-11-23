@@ -1,0 +1,155 @@
+# AeroLink corridor network: hand-written connections (ARCHITECTURE §3.3).
+# Corridor SHAPES come from FDOT highway GIS; this file says which nodes exist
+# and which highway connects them. Build with `aerolink.airspace.build_network`.
+#
+# Sites: airspace/sites-evtol.geojson (FDOT Phase 1A survey) and
+#        airspace/sites-helipads.geojson (FDEP Airports, medical pads near a corridor).
+# Waypoints are approximate: move each one ONTO its highway after checking the map.
+
+version: central-fl-v1
+
+# How each highway is found in FDOT's Interstates / U.S. Highways / State Roads
+# shapefiles (aerolink.airspace.fetch_fdot). Field confirmed with `fetch_fdot inspect`
+# on the 2026-11-14 FDOT release.
+highways:
+  I-4:   { layer: interstates, field: RouteNum, value: "4" }
+  US-27: { layer: us_roads,    field: RouteNum, value: "27" }
+  US-98: { layer: us_roads,    field: RouteNum, value: "98" }
+  SR-60: { layer: state_roads, field: RouteNum, value: "60" }
+  US-17: { layer: us_roads,    field: RouteNum, value: "17" }      # US-17/92, Orlando - Kissimmee - Haines City
+
+nodes:
+  # Landing sites. `types`: evtol | helipad. Default `serves`:
+  #   evtol -> passenger, helipad -> medical (ARCHITECTURE §3.2)
+
+  # --- eVTOL sites ---------------------------------------------------------------
+  ev-sef:         { types: [evtol], name: "Sebring Regional Airport", lat: 27.44987, lon: -81.33895, pads: 2, source: "hand survey (Phase 1A)", verified: true }
+  ev-water-st:    { types: [evtol], name: "Water Street (Downtown Tampa)", lat: 27.94324, lon: -82.45089, pads: 2, source: "hand survey (Phase 1A)", verified: true }
+  ev-orl:         { types: [evtol], name: "Orlando Executive Airport", lat: 28.54236, lon: -81.32218, pads: 2, source: "hand survey (Phase 1A)", verified: true }
+  ev-parramore:   { types: [evtol], name: "Parramore (Downtown Orlando)", lat: 28.53395, lon: -81.38659, pads: 2, source: "hand survey (Phase 1A)", verified: true }
+  ev-lal:         { types: [evtol], name: "Lakeland Linder Intl Airport", lat: 27.97893, lon: -82.01347, pads: 2, source: "hand survey (SIS reliever)", verified: true }
+  ev-suntrax:     { types: [evtol], name: "SunTrax (FDOT AAM test site)", lat: 28.08700, lon: -81.78000, pads: 4, source: "FDOT AAM Business Plan first routes", verified: true }
+
+  # --- Medical helipads (FDEP Airports, FAA identifiers) ---------------------------
+  hp-5fl3:        { types: [helipad], name: "Brandon Hospital", lat: 27.93258, lon: -82.28884, pads: 1, source: "FDEP Airports 5FL3", verified: true }
+  hp-fd28:        { types: [helipad], name: "Orlando Health Orlando Regional Medical Center", lat: 28.52516, lon: -81.37716, pads: 1, source: "FDEP Airports FD28", verified: true }
+  hp-3fd5:        { types: [helipad], name: "Orlando Health Arnold Palmer Hospital for Children", lat: 28.52313, lon: -81.38019, pads: 1, source: "FDEP Airports 3FD5", verified: true }
+  hp-fl000862:    { types: [helipad], name: "South Florida Baptist Hospital", lat: 28.01505, lon: -82.13850, pads: 1, source: "FDEP Airports FL000862", verified: true }
+  hp-1fl7:        { types: [helipad], name: "Bartow Memorial Hospital", lat: 27.91899, lon: -81.84484, pads: 1, source: "FDEP Airports 1FL7", verified: true }
+  hp-7fd7:        { types: [helipad], name: "Lakeland Regional Health Medical Center", lat: 28.06220, lon: -81.95434, pads: 1, source: "FDEP Airports 7FD7", verified: true }
+  hp-9fd3:        { types: [helipad], name: "Highlands Regional Medical Center", lat: 27.46545, lon: -81.43187, pads: 1, source: "FDEP Airports 9FD3", verified: true }
+  hp-37fa:        { types: [helipad], name: "AdventHealth Orlando", lat: 28.57566, lon: -81.36827, pads: 1, source: "FDEP Airports 37FA", verified: true }
+  hp-77fl:        { types: [helipad], name: "AdventHealth Celebration", lat: 28.32932, lon: -81.54285, pads: 1, source: "FDEP Airports 77FL", verified: true }
+  hp-fa52:        { types: [helipad], name: "AdventHealth Sebring", lat: 27.53804, lon: -81.50926, pads: 1, source: "FDEP Airports FA52", verified: true }
+  hp-2fl9:        { types: [helipad], name: "AdventHealth Heart of Florida", lat: 28.18146, lon: -81.64277, pads: 1, source: "FDEP Airports 2FL9", verified: true }
+  hp-85fd:        { types: [helipad], name: "AdventHealth Kissimmee", lat: 28.31538, lon: -81.40597, pads: 1, source: "FDEP Airports 85FD", verified: true }
+  hp-fd99:        { types: [helipad], name: "Orlando Health Dr. P. Phillips Hospital", lat: 28.42958, lon: -81.47710, pads: 1, source: "FDEP Airports FD99", verified: true }
+  hp-12fd:        { types: [helipad], name: "Osceola Regional Medical Center", lat: 28.29887, lon: -81.40986, pads: 1, source: "FDEP Airports 12FD", verified: true }
+  hp-60fd:        { types: [helipad], name: "Winter Haven Hospital", lat: 28.02880, lon: -81.72503, pads: 1, source: "FDEP Airports 60FD", verified: true }
+  hp-fd36:        { types: [helipad], name: "AdventHealth East Orlando", lat: 28.54122, lon: -81.27994, pads: 1, source: "FDEP Airports FD36", verified: true }
+  hp-68fl:        { types: [helipad], name: "Hillsborough County Fire Rescue / EMS", lat: 28.00278, lon: -82.43500, pads: 1, source: "FDEP Airports 68FL", verified: true }
+  hp-fl000920:    { types: [helipad], name: "AdventHealth Tampa", lat: 28.07048, lon: -82.42231, pads: 1, source: "FDEP Airports FL000920", verified: true }
+  hp-61fl:        { types: [helipad], name: "Tampa General Hospital", lat: 27.93926, lon: -82.45947, pads: 1, source: "FDEP Airports 61FL", verified: true }
+  hp-01fd:        { types: [helipad], name: "AdventHealth Altamonte Springs", lat: 28.66666, lon: -81.36969, pads: 1, source: "FDEP Airports 01FD", verified: true }
+  hp-76fl:        { types: [helipad], name: "Orlando Health Health Central Hospital", lat: 28.55052, lon: -81.52728, pads: 1, source: "FDEP Airports 76FL", verified: true }
+  hp-fl001459:    { types: [helipad], name: "Poinciana Medical Center", lat: 28.14470, lon: -81.47559, pads: 1, source: "FDEP Airports FL001459", verified: true }
+
+  # --- Junction waypoints (place ON the highway) ------------------------------------
+  wp-downtown-tampa:  { types: [waypoint], name: "Downtown Tampa (I-4 / I-275)", lat: 27.96036, lon: -82.44677 }
+  wp-i4-i75:          { types: [waypoint], name: "I-4 / I-75", lat: 27.99980, lon: -82.33576 }
+  wp-brandon:         { types: [waypoint], name: "Brandon (SR-60)", lat: 27.93758, lon: -82.28590 }
+  wp-plant-city:      { types: [waypoint], name: "Plant City (I-4)", lat: 28.03468, lon: -82.12673 }
+  wp-lakeland:        { types: [waypoint], name: "Lakeland (I-4)", lat: 28.08501, lon: -81.97003 }
+  wp-auburndale:      { types: [waypoint], name: "Auburndale / Polk Pkwy (I-4)", lat: 28.15776, lon: -81.79290 }
+  wp-i4-us27:         { types: [waypoint], name: "I-4 / US-27", lat: 28.23229, lon: -81.64964 }
+  wp-kissimmee:       { types: [waypoint], name: "Kissimmee (I-4)", lat: 28.37113, lon: -81.51015 }
+  wp-orlando:         { types: [waypoint], name: "Downtown Orlando", lat: 28.53993, lon: -81.38184 }
+  wp-mulberry:        { types: [waypoint], name: "Mulberry (SR-60)", lat: 27.89487, lon: -81.97000 }
+  wp-bartow:          { types: [waypoint], name: "Bartow (SR-60/US-98)", lat: 27.90396, lon: -81.84328 }
+  wp-haines-city:     { types: [waypoint], name: "Haines City (US-27)", lat: 28.11370, lon: -81.63999 }
+  wp-lake-wales:      { types: [waypoint], name: "Lake Wales (US-27/SR-60)", lat: 27.89767, lon: -81.59978 }
+  wp-avon-park:       { types: [waypoint], name: "Avon Park (US-27)", lat: 27.59999, lon: -81.51441 }
+  wp-sebring:         { types: [waypoint], name: "Sebring (US-27)", lat: 27.47253, lon: -81.44601 }
+
+# Corridors: [from, to, highway].
+edges:
+  # I-4: Tampa -> Orlando
+  - [wp-downtown-tampa, wp-i4-i75,      I-4]
+  - [wp-i4-i75,         wp-plant-city,  I-4]
+  - [wp-plant-city,     wp-lakeland,    I-4]
+  - [wp-lakeland,       wp-auburndale,  I-4]
+  - [wp-auburndale,     wp-i4-us27,     I-4]
+  - [wp-i4-us27,        wp-kissimmee,   I-4]
+  - [wp-kissimmee,      wp-orlando,     I-4]
+  # SR-60: Tampa -> Lake Wales (southern alternative)
+  - [wp-downtown-tampa, wp-brandon,     SR-60]
+  - [wp-brandon,        wp-mulberry,    SR-60]
+  - [wp-mulberry,       wp-bartow,      SR-60]
+  - [wp-bartow,         wp-lake-wales,  SR-60]
+  # US-98: Lakeland <-> Bartow (links I-4 and SR-60)
+  - [wp-lakeland,       wp-bartow,      US-98]
+  # US-27: Davenport -> Sebring
+  - [wp-i4-us27,        wp-haines-city, US-27]
+  - [wp-haines-city,    wp-lake-wales,  US-27]
+  - [wp-lake-wales,     wp-avon-park,   US-27]
+  - [wp-avon-park,      wp-sebring,     US-27]
+  # US-17/92: Orlando -> Haines City (second way into downtown Orlando)
+  - [wp-orlando,        wp-haines-city, US-17]
+
+# Designated clearance routes: legs that may cross Class B with ATC clearance
+# (FDOT plan: Class B needs "mitigation or special procedures"; ARCHITECTURE §5.2).
+# Everything else treats Class B as no-go. Restricted/military is never allowed.
+clearance_routes:
+  - [wp-downtown-tampa, wp-i4-i75]      # I-4 into downtown Tampa (Tampa Intl Class B)
+  - [wp-downtown-tampa, wp-brandon]     # SR-60 into downtown Tampa
+  - [wp-kissimmee,      wp-orlando]     # I-4 into downtown Orlando (Orlando Intl Class B)
+  - [wp-orlando,        wp-haines-city] # US-17/92 out of downtown Orlando
+  - [hp-85fd,           wp-kissimmee]   # AdventHealth Kissimmee approach
+  - [hp-fd36,           wp-orlando]     # AdventHealth East Orlando approach
+
+# Connectors: straight lines from a landing site to its corridor node.
+connectors:
+  # eVTOL sites
+  - [ev-water-st, wp-downtown-tampa]
+  - [ev-parramore, wp-orlando]
+  - [ev-orl, wp-orlando]
+  - [ev-sef, wp-sebring]
+  - [ev-lal, wp-lakeland]
+  - [ev-suntrax, wp-auburndale]
+  # Medical helipads (nearest waypoint, km)
+  - [hp-5fl3, wp-brandon]           # 0.6 km
+  - [hp-fd28, wp-orlando]           # 1.7 km
+  - [hp-3fd5, wp-orlando]           # 1.9 km
+  - [hp-fl000862, wp-plant-city]    # 1.9 km
+  - [hp-1fl7, wp-bartow]            # 2.6 km
+  - [hp-7fd7, wp-lakeland]          # 2.6 km
+  - [hp-9fd3, wp-sebring]           # 2.8 km
+  - [hp-37fa, wp-orlando]           # 4.1 km
+  - [hp-77fl, wp-kissimmee]         # 6.6 km
+  - [hp-fa52, wp-avon-park]         # 6.9 km
+  - [hp-2fl9, wp-i4-us27]           # 7.2 km
+  - [hp-85fd, wp-kissimmee]         # 8.2 km
+  - [hp-fd99, wp-kissimmee]         # 8.9 km
+  - [hp-12fd, wp-kissimmee]         # 8.9 km
+  - [hp-60fd, wp-auburndale]        # 9.6 km
+  - [hp-fd36, wp-orlando]           # 9.8 km
+  - [hp-68fl, wp-downtown-tampa]    # 4.4 km
+  - [hp-fl000920, wp-downtown-tampa]  # 12.0 km
+  - [hp-61fl, wp-downtown-tampa]    # 3.0 km
+  - [hp-01fd, wp-orlando]           # 14.1 km
+  - [hp-76fl, wp-orlando]           # 14.4 km
+  - [hp-fl001459, wp-haines-city]   # 14.7 km
+
+# Build settings
+build:
+  band_min_ft: 1000          # FDOT eVTOL operating band
+  band_max_ft: 3000
+  band_thickness_ft: 500
+  lateral_buffer_m: 300
+  simplify_m: 500
+  min_routes_per_pair: 2     # between every pair of eVTOL sites...
+  redundancy_min_distance_km: 15   # ...at least this far apart (same-city pairs need 1)
+  max_waypoint_offset_m: 2000      # a waypoint further than this from its highway is an error
+  # FDOT AAM Business Plan airspace zones (ARCHITECTURE §5.2): corridors may pass
+  # through these with ATC coordination (yellow zone), and avoid them when possible.
+  coordination_airspace: [class_d]

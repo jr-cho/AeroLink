@@ -1,0 +1,93 @@
+keep,id,name,type,lat,lon,pads,source,verified,notes,faa_ident,faa_type,private_use,city,county,hospital_like,nearest_waypoint,km_to_waypoint
+,hp-fl001339,All Childrens Hospital Helipad,helipad,27.76509,-82.6407,1,FAA ADDS Airports FL001339,no,,FL001339,HP,yes,,Pinellas,yes,wp-i4-i75,39.4
+yes,hp-3fd5,Arnold Palmer Hospital Helistop,helipad,28.52313,-81.38019,1,FAA ADDS Airports 3FD5,no,,3FD5,HP,yes,,Orange,yes,wp-orlando,1.9
+yes,hp-1fl7,Bartow Memorial Hospital Helistop,helipad,27.91899,-81.84484,1,FAA ADDS Airports 1FL7,no,,1FL7,HP,yes,,Polk,yes,wp-bartow,2.6
+,hp-fd64,Bay Pines Va Hospital Helistop,helipad,27.81095,-82.77977,1,FAA ADDS Airports FD64,no,,FD64,HP,yes,,Pinellas,yes,wp-i4-i75,48.4
+,hp-2fd3,Bayfront Medical Center Heliport,helipad,27.77175,-82.64872,1,FAA ADDS Airports 2FD3,no,,2FD3,HP,yes,,Pinellas,yes,wp-i4-i75,39.6
+,hp-5fl2,Blake Medical Center,helipad,27.48216,-82.62245,1,FAA ADDS Airports 5FL2,no,,5FL2,HP,yes,,Manatee,yes,wp-brandon,60.4
+,hp-fl38,Care Flight Heliport,helipad,27.98363,-82.49,1,FAA ADDS Airports FL38,no,,FL38,HP,yes,,Hillsborough,yes,wp-i4-i75,15.5
+yes,hp-77fl,Celebration Health Heliport,helipad,28.32932,-81.54285,1,FAA ADDS Airports 77FL,no,,77FL,HP,yes,Celebration,Osceola,yes,wp-kissimmee,6.6
+,hp-2fa8,Central Florida Regional Hospital Heliport,helipad,28.8,-81.28333,1,FAA ADDS Airports 2FA8,no,,2FA8,HP,yes,,Seminole,yes,wp-orlando,30.3
+,hp-fl30,Community Hospital Of New Port Richey,helipad,28.23516,-82.72237,1,FAA ADDS Airports FL30,no,,FL30,HP,yes,New Port Richey,Pasco,yes,wp-i4-i75,46.7
+yes,hp-fd99,Dr. P. Philips Hospital Heliport,helipad,28.42958,-81.4771,1,FAA ADDS Airports FD99,no,,FD99,HP,yes,,Orange,yes,wp-kissimmee,8.8
+yes,hp-68fl,Fire Rescue/ems/eoc Helistop,helipad,28.00278,-82.435,1,FAA ADDS Airports 68FL,no,,68FL,HP,yes,,Hillsborough,yes,wp-i4-i75,10.1
+yes,hp-01fd,Florida Hospital Altamonte Heliport,helipad,28.66666,-81.36969,1,FAA ADDS Airports 01FD,no,,01FD,HP,yes,,Seminole,yes,wp-orlando,14.1
+,hp-fl001464,Florida Hospital Apopka,helipad,28.68139,-81.5075,1,FAA ADDS Airports FL001464,no,,FL001464,HP,yes,,Orange,yes,wp-orlando,20.0
+yes,hp-fd36,Florida Hospital East Helistop,helipad,28.54122,-81.27994,1,FAA ADDS Airports FD36,no,,FD36,HP,yes,,Orange,yes,wp-orlando,9.8
+yes,hp-37fa,Florida Hospital Heliport,helipad,28.57566,-81.36827,1,FAA ADDS Airports 37FA,no,,37FA,HP,yes,,Orange,yes,wp-orlando,4.1
+yes,hp-85fd,Florida Hospital Kissimmee Heliport,helipad,28.31538,-81.40597,1,FAA ADDS Airports 85FD,no,,85FD,HP,yes,Kissimmee,Osceola,yes,wp-kissimmee,8.2
+,hp-30fa,Florida Hospital Lake Placid Heliport,helipad,27.32054,-81.37048,1,FAA ADDS Airports 30FA,no,,30FA,HP,yes,,Highlands,yes,wp-sebring,20.0
+yes,hp-fa52,Florida Hospital Sebring Heliport,helipad,27.53804,-81.50926,1,FAA ADDS Airports FA52,no,,FA52,HP,yes,,Highlands,yes,wp-avon-park,6.9
+,hp-fl000926,Hca Oak Hill Hospital Helistop,helipad,28.53733,-82.53485,1,FAA ADDS Airports FL000926,no,,FL000926,HP,yes,,Hernando,yes,wp-i4-i75,63.5
+yes,hp-76fl,Health Central Helistop,helipad,28.55052,-81.52728,1,FAA ADDS Airports 76FL,no,,76FL,HP,yes,,Orange,yes,wp-orlando,14.5
+yes,hp-2fl9,Heart Of Florida Hospital Helistop,helipad,28.18146,-81.64277,1,FAA ADDS Airports 2FL9,no,,2FL9,HP,yes,,Polk,yes,wp-i4-us27,7.2
+,hp-fa58,Helen Ellis Memorial Hospital Heliport,helipad,28.13265,-82.75844,1,FAA ADDS Airports FA58,no,,FA58,HP,yes,,Pinellas,yes,wp-i4-i75,44.6
+,hp-fl001128,Hernando Healthcare Brooksville Heliport,helipad,28.53878,-82.44175,1,FAA ADDS Airports FL001128,no,,FL001128,HP,yes,,Hernando,yes,wp-i4-i75,61.4
+yes,hp-9fd3,Highlands Regional Medical Center Heliport,helipad,27.46545,-81.43187,1,FAA ADDS Airports 9FD3,no,,9FD3,HP,yes,,Highlands,yes,wp-sebring,2.8
+yes,hp-5fl3,Hospital Brandon Helistop,helipad,27.93258,-82.28884,1,FAA ADDS Airports 5FL3,no,,5FL3,HP,yes,,Hillsborough,yes,wp-brandon,0.6
+yes,hp-7fd7,Lakeland Regional Medical Center Heliport,helipad,28.0622,-81.95434,1,FAA ADDS Airports 7FD7,no,,7FD7,HP,yes,,Polk,yes,wp-lakeland,2.6
+,hp-7fl9,Lakewood Ranch Med Ctr Helistop,helipad,27.39004,-82.43544,1,FAA ADDS Airports 7FL9,no,,7FL9,HP,yes,,Manatee,yes,wp-brandon,62.5
+,hp-fl45,Manatee Memorial Hospital Helistop,helipad,27.49576,-82.56257,1,FAA ADDS Airports FL45,no,,FL45,HP,yes,,Manatee,yes,wp-brandon,56.1
+,hp-fa04,Mease Hospital Helistop Dunedin,helipad,28.01443,-82.78201,1,FAA ADDS Airports FA04,no,,FA04,HP,yes,,Pinellas,yes,wp-i4-i75,44.2
+,hp-36fl,Morton Plant Mease Safety Harbor Heliport,helipad,28.03813,-82.70849,1,FAA ADDS Airports 36FL,no,,36FL,HP,yes,,Pinellas,yes,wp-i4-i75,37.3
+,hp-fl001405,Nemours Children's Hospital Helistop,helipad,28.37681,-81.27486,1,FAA ADDS Airports FL001405,no,,FL001405,HP,yes,,Orange,yes,wp-kissimmee,20.3
+,hp-6fa6,North Bay Hospital Heliport,helipad,28.25568,-82.71398,1,FAA ADDS Airports 6FA6,no,,6FA6,HP,yes,,Pasco,yes,wp-i4-i75,47.4
+yes,hp-fd28,Orlando Regional Med Ctr Heliport,helipad,28.52516,-81.37716,1,FAA ADDS Airports FD28,no,,FD28,HP,yes,,Orange,yes,wp-orlando,1.7
+yes,hp-12fd,Osceola Regional Med Ctr Helistop,helipad,28.29887,-81.40986,1,FAA ADDS Airports 12FD,no,,12FD,HP,yes,Kissimmee,Osceola,yes,wp-kissimmee,8.9
+yes,hp-fl001459,Poinciana Medical Center Heliport,helipad,28.1447,-81.47559,1,FAA ADDS Airports FL001459,no,,FL001459,HP,yes,Poinciana,Osceola,yes,wp-haines-city,14.7
+,hp-fl32,Regional Medical Center At Bayonet Point Heliport,helipad,28.36242,-82.68804,1,FAA ADDS Airports FL32,no,,FL32,HP,yes,Hudson,Pasco,yes,wp-i4-i75,53.8
+,hp-6fl6,Sarasota Fire-rescue East Side Heliport,helipad,27.33872,-82.49697,1,FAA ADDS Airports 6FL6,no,,6FL6,HP,yes,,Sarasota,yes,wp-brandon,69.6
+,hp-fa23,Sarasota Hospital Helistop,helipad,27.31778,-82.53076,1,FAA ADDS Airports FA23,no,,FA23,HP,yes,,Sarasota,yes,wp-brandon,72.8
+yes,hp-fl000862,South Florida Baptist Hospital,helipad,28.01505,-82.1385,1,FAA ADDS Airports FL000862,no,,FL000862,HP,yes,,Hillsborough,yes,wp-plant-city,1.9
+,hp-fl001272,South Lake Hospital Helipad,helipad,28.555,-81.72333,1,FAA ADDS Airports FL001272,no,,FL001272,HP,yes,,Lake,yes,wp-kissimmee,32.9
+,hp-fl000917,Spring Hill Hospital Helistop,helipad,28.44186,-82.54217,1,FAA ADDS Airports FL000917,no,,FL000917,HP,yes,,Hernando,yes,wp-i4-i75,53.8
+,hp-fd52,St Cloud Regional Medical Center Heliport,helipad,28.24391,-81.30345,1,FAA ADDS Airports FD52,no,,FD52,HP,yes,Saint Cloud,Osceola,yes,wp-kissimmee,20.9
+,hp-fa70,St Joseph's - North Heliport,helipad,28.13057,-82.50926,1,FAA ADDS Airports FA70,no,,FA70,HP,yes,,Hillsborough,yes,wp-i4-i75,23.1
+yes,hp-61fl,Tampa General Hospital Heliport,helipad,27.93926,-82.45947,1,FAA ADDS Airports 61FL,no,,61FL,HP,yes,,Hillsborough,yes,wp-i4-i75,13.8
+yes,hp-fl000920,University Community Hospital Heliport,helipad,28.07048,-82.42231,1,FAA ADDS Airports FL000920,no,,FL000920,HP,yes,,Hillsborough,yes,wp-i4-i75,12.3
+,hp-fl001442,Wesley Chapel Medical Center,helipad,28.1947,-82.35047,1,FAA ADDS Airports FL001442,no,,FL001442,HP,yes,,Pasco,yes,wp-i4-i75,22.4
+yes,hp-60fd,Winter Haven Hospital,helipad,28.0288,-81.72503,1,FAA ADDS Airports 60FD,no,,60FD,HP,yes,,Polk,yes,wp-auburndale,9.6
+,hp-7fl1,Adams Executive Heliport,helipad,28.01733,-81.67233,1,FAA ADDS Airports 7FL1,no,,7FL1,HP,yes,,Polk,,wp-haines-city,11.5
+,hp-2fd7,Air Orlando Heliport,helipad,28.43549,-81.47327,1,FAA ADDS Airports 2FD7,no,,2FD7,HP,yes,,Orange,,wp-kissimmee,9.5
+,hp-fl001460,Arrowhead Heliport,helipad,28.10503,-82.48267,1,FAA ADDS Airports FL001460,no,,FL001460,HP,yes,,Hillsborough,,wp-i4-i75,19.2
+,hp-1fl1,Bronson Enterprises Lllp Heliport,helipad,28.31214,-81.46594,1,FAA ADDS Airports 1FL1,no,,1FL1,HP,yes,,Osceola,,wp-kissimmee,4.4
+,hp-fa22,Dove Heliport,helipad,27.33162,-82.42974,1,FAA ADDS Airports FA22,no,,FA22,HP,yes,,Sarasota,,wp-brandon,68.6
+,hp-fd98,Ferguson Heliport,helipad,28.10475,-82.48322,1,FAA ADDS Airports FD98,no,,FD98,HP,yes,,Hillsborough,,wp-i4-i75,19.3
+,hp-3fa2,Fly High Helistop,helipad,28.34602,-81.66465,1,FAA ADDS Airports 3FA2,no,,3FA2,HP,yes,,Polk,,wp-i4-us27,11.2
+,hp-fl001378,Gabbert Heliport M&g Transactions,helipad,27.33492,-82.43001,1,FAA ADDS Airports FL001378,no,,FL001378,HP,yes,,Sarasota,,wp-brandon,68.3
+,hp-13fl,Gator Lake Heliport,helipad,28.27786,-82.32045,1,FAA ADDS Airports 13FL,no,,13FL,HP,yes,,Pasco,,wp-i4-i75,31.6
+,hp-fd54,"Gold Eagle Helicopters, Inc Heliport",helipad,28.33451,-81.50376,1,FAA ADDS Airports FD54,no,,FD54,HP,yes,,Osceola,,wp-kissimmee,2.9
+,hp-fd41,Grand Cypress Resort Heliport,helipad,28.38095,-81.50853,1,FAA ADDS Airports FD41,no,,FD41,HP,yes,,Orange,,wp-kissimmee,4.4
+,hp-38fd,Griffins Main Office Heliport,helipad,27.73727,-81.53179,1,FAA ADDS Airports 38FD,no,,38FD,HP,yes,,Polk,,wp-avon-park,15.4
+,hp-fl001334,Heli-partners I-drive Heliport,helipad,28.38444,-81.48528,1,FAA ADDS Airports FL001334,no,,FL001334,HP,yes,,Orange,,wp-kissimmee,3.9
+,hp-fl000922,"Home Shopping Network, Inc Heliport",helipad,27.89333,-82.67722,1,FAA ADDS Airports FL000922,no,,FL000922,HP,yes,,Pinellas,,wp-i4-i75,35.6
+,hp-fl92,L.m. Hughey Heliport,helipad,27.94141,-82.53538,1,FAA ADDS Airports FL92,no,,FL92,HP,yes,,Hillsborough,,wp-i4-i75,20.7
+,hp-fd06,Lake Bird Heliport,helipad,28.18121,-82.45521,1,FAA ADDS Airports FD06,no,,FD06,HP,yes,,Pasco,,wp-i4-i75,24.1
+,hp-fd32,Lake Gibson High School Heliport,helipad,28.13363,-81.94286,1,FAA ADDS Airports FD32,no,,FD32,HP,yes,,Polk,,wp-lakeland,5.4
+,hp-fa45,Lake Wales Heliport,helipad,27.91635,-81.54898,1,FAA ADDS Airports FA45,no,,FA45,HP,yes,,Polk,,wp-lake-wales,4.4
+,hp-9fl6,Land South Air Helistop,helipad,27.86639,-81.96944,1,FAA ADDS Airports 9FL6,no,,9FL6,HP,yes,,Polk,,wp-mulberry,3.2
+,hp-fa31,Legoland Florida Heliport,helipad,27.99564,-81.69055,1,FAA ADDS Airports FA31,no,,FA31,HP,yes,,Polk,,wp-haines-city,14.4
+,hp-40fd,Littles Heliport,helipad,28.01109,-81.87935,1,FAA ADDS Airports 40FD,no,,40FD,HP,yes,,Polk,,wp-lakeland,10.7
+,hp-5fd4,Living Seas Helistop,helipad,28.37473,-81.55424,1,FAA ADDS Airports 5FD4,no,,5FD4,HP,yes,,Orange,,wp-kissimmee,7.8
+,hp-fl000669,Lockheed Martin Heliport,helipad,28.44612,-81.45257,1,FAA ADDS Airports FL000669,no,,FL000669,HP,yes,,Orange,,wp-kissimmee,11.0
+,hp-fl000858,Lz Shadow Heliport,helipad,28.55767,-82.33557,1,FAA ADDS Airports FL000858,no,,FL000858,HP,yes,,Hernando,,wp-i4-i75,62.6
+,hp-fl000915,Malcolm Timmins Heliport,helipad,28.42536,-82.64672,1,FAA ADDS Airports FL000915,no,,FL000915,HP,yes,,Pasco,,wp-i4-i75,57.0
+,hp-fl001384,Orange County Convention Center Heliport,helipad,28.43084,-81.45629,1,FAA ADDS Airports FL001384,no,,FL001384,HP,yes,,Orange,,wp-kissimmee,9.3
+,hp-fl000871,Orlando Helitours Heliport I-drive,helipad,28.42389,-81.45972,1,FAA ADDS Airports FL000871,no,,FL000871,HP,yes,,Orange,,wp-kissimmee,8.4
+,hp-19fd,Osceola County Sheriffs Office Heliport,helipad,28.27508,-81.33651,1,FAA ADDS Airports 19FD,no,,19FD,HP,yes,,Osceola,,wp-kissimmee,16.3
+,hp-fl001389,Pasco Sheriff's Hanger Heliport,helipad,28.30802,-82.48682,1,FAA ADDS Airports FL001389,no,,FL001389,HP,yes,Land O Lakes,Pasco,,wp-i4-i75,38.0
+,hp-fa06,Pinellas County Sheriffs Helistop,helipad,27.9015,-82.79361,1,FAA ADDS Airports FA06,no,,FA06,HP,yes,,Pinellas,,wp-i4-i75,46.4
+,hp-7fa5,Premium Helicopters Heliport,helipad,28.38917,-81.48861,1,FAA ADDS Airports 7FA5,no,,7FA5,HP,yes,,Orange,,wp-kissimmee,4.4
+,hp-fl001093,Redstone Heliport,helipad,28.23,-81.28972,1,FAA ADDS Airports FL001093,no,,FL001093,HP,yes,,Osceola,,wp-kissimmee,22.9
+,hp-6fl0,Seminole Lake Gliderport Heliport,helipad,28.40584,-81.83786,1,FAA ADDS Airports 6FL0,no,,6FL0,HP,yes,,Lake,,wp-i4-us27,25.9
+,hp-3fa3,Southfork Heliport,helipad,28.22694,-81.36653,1,FAA ADDS Airports 3FA3,no,,3FA3,HP,yes,,Osceola,,wp-kissimmee,17.6
+,hp-fl000874,Sumter County Sheriffs Heliport,helipad,28.6625,-82.10675,1,FAA ADDS Airports FL000874,no,,FL000874,HP,yes,Bushnell,Sumter,,wp-i4-us27,64.6
+,hp-36fa,Sunshine Helicopter Tours Heliport,helipad,28.33417,-81.48917,1,FAA ADDS Airports 36FA,no,,36FA,HP,yes,,Osceola,,wp-kissimmee,2.0
+,hp-54fl,Teco Plaza Helistop,helipad,27.95035,-82.45935,1,FAA ADDS Airports 54FL,no,,54FL,HP,yes,,Hillsborough,,wp-i4-i75,13.3
+,hp-6fl7,Timmer Helistop,helipad,27.83467,-81.43753,1,FAA ADDS Airports 6FL7,no,,6FL7,HP,yes,,Polk,,wp-lake-wales,16.7
+,hp-89fd,Tranquility Pad Heliport,helipad,28.40136,-82.24261,1,FAA ADDS Airports 89FD,no,,89FD,HP,yes,,Pasco,,wp-plant-city,43.9
+,hp-fd62,Waters Heliport,helipad,27.78008,-81.64328,1,FAA ADDS Airports FD62,no,,FD62,HP,yes,,Polk,,wp-lake-wales,14.3
+,hp-9fd8,Wesh-tv Channel 2 Helistop,helipad,28.6111,-81.38599,1,FAA ADDS Airports 9FD8,no,,9FD8,HP,yes,,Orange,,wp-orlando,7.9
+,hp-fl70,Wfla-tv 8 Helistop,helipad,27.94377,-82.46176,1,FAA ADDS Airports FL70,no,,FL70,HP,yes,,Hillsborough,,wp-i4-i75,13.8
+,hp-0fl7,Wkmg-tv Private Helistop,helipad,28.59407,-81.4199,1,FAA ADDS Airports 0FL7,no,,0FL7,HP,yes,,Orange,,wp-orlando,7.1
+,hp-13fd,Yelvington Heliport,helipad,28.51861,-81.38312,1,FAA ADDS Airports 13FD,no,,13FD,HP,yes,,Orange,,wp-orlando,2.4

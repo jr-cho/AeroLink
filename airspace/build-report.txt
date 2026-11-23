@@ -1,0 +1,81 @@
+AeroLink network build report
+
+Edges kept: 45
+  wp-downtown-tampa -> wp-i4-i75 (I-4): 12.9 km, band 2500-3000 ft, Class B clearance: faa-class_b-tampa-class-b-4828
+  wp-i4-i75 -> wp-plant-city (I-4): 21.1 km, band 2500-3000 ft
+  wp-plant-city -> wp-lakeland (I-4): 17.3 km, band 2500-3000 ft, ATC coordination: faa-class_d-lakeland-class-d-876
+  wp-lakeland -> wp-auburndale (I-4): 20.0 km, band 2500-3000 ft
+  wp-auburndale -> wp-i4-us27 (I-4): 16.4 km, band 2500-3000 ft
+  wp-i4-us27 -> wp-kissimmee (I-4): 20.6 km, band 2500-3000 ft
+  wp-kissimmee -> wp-orlando (I-4): 24.4 km, band 2500-3000 ft, Class B clearance: faa-class_b-orlando-class-b-4797, faa-class_b-orlando-class-b-4798, faa-class_b-orlando-class-b-4800
+  wp-downtown-tampa -> wp-brandon (SR-60): 16.2 km, band 2500-3000 ft, Class B clearance: faa-class_b-tampa-class-b-4828
+  wp-brandon -> wp-mulberry (SR-60): 32.7 km, band 2500-3000 ft, ATC coordination: faa-class_d-lakeland-class-d-876
+  wp-mulberry -> wp-bartow (SR-60): 12.8 km, band 2500-3000 ft
+  wp-bartow -> wp-lake-wales (SR-60): 24.6 km, band 2500-3000 ft
+  wp-lakeland -> wp-bartow (US-98): 24.2 km, band 2500-3000 ft
+  wp-i4-us27 -> wp-haines-city (US-27): 13.4 km, band 2500-3000 ft
+  wp-haines-city -> wp-lake-wales (US-27): 24.9 km, band 2500-3000 ft
+  wp-lake-wales -> wp-avon-park (US-27): 35.7 km, band 2500-3000 ft
+  wp-avon-park -> wp-sebring (US-27): 17.3 km, band 2500-3000 ft
+  wp-orlando -> wp-haines-city (US-17): 68.2 km, band 2500-3000 ft, Class B clearance: faa-class_b-orlando-class-b-4796, faa-class_b-orlando-class-b-4797, faa-class_b-orlando-class-b-4798, faa-class_b-orlando-class-b-4799, faa-class_b-orlando-class-b-4800
+  ev-water-st -> wp-downtown-tampa (connector): 1.9 km, band 2500-3000 ft
+  ev-parramore -> wp-orlando (connector): 0.8 km, band 2500-3000 ft
+  ev-orl -> wp-orlando (connector): 5.8 km, band 2500-3000 ft
+  ev-sef -> wp-sebring (connector): 10.9 km, band 2500-3000 ft
+  ev-lal -> wp-lakeland (connector): 12.5 km, band 2500-3000 ft
+  ev-suntrax -> wp-auburndale (connector): 7.9 km, band 2500-3000 ft
+  hp-5fl3 -> wp-brandon (connector): 0.6 km, band 2500-3000 ft
+  hp-fd28 -> wp-orlando (connector): 1.7 km, band 2500-3000 ft
+  hp-3fd5 -> wp-orlando (connector): 1.9 km, band 2500-3000 ft
+  hp-fl000862 -> wp-plant-city (connector): 2.5 km, band 2500-3000 ft
+  hp-1fl7 -> wp-bartow (connector): 1.7 km, band 2500-3000 ft
+  hp-7fd7 -> wp-lakeland (connector): 3.0 km, band 2500-3000 ft
+  hp-9fd3 -> wp-sebring (connector): 1.6 km, band 2500-3000 ft
+  hp-37fa -> wp-orlando (connector): 4.2 km, band 2500-3000 ft
+  hp-77fl -> wp-kissimmee (connector): 5.6 km, band 2500-3000 ft
+  hp-fa52 -> wp-avon-park (connector): 6.9 km, band 2500-3000 ft
+  hp-2fl9 -> wp-i4-us27 (connector): 5.7 km, band 2500-3000 ft
+  hp-85fd -> wp-kissimmee (connector): 11.9 km, band 2500-3000 ft, Class B clearance: faa-class_b-orlando-class-b-4797
+  hp-fd99 -> wp-kissimmee (connector): 7.2 km, band 2500-3000 ft
+  hp-12fd -> wp-kissimmee (connector): 12.7 km, band 2500-3000 ft
+  hp-60fd -> wp-auburndale (connector): 15.8 km, band 2500-3000 ft
+  hp-fd36 -> wp-orlando (connector): 10.0 km, band 2500-3000 ft, Class B clearance: faa-class_b-orlando-class-b-4797
+  hp-68fl -> wp-downtown-tampa (connector): 4.8 km, band 2500-3000 ft
+  hp-fl000920 -> wp-downtown-tampa (connector): 12.4 km, band 2500-3000 ft
+  hp-61fl -> wp-downtown-tampa (connector): 2.7 km, band 2500-3000 ft
+  hp-01fd -> wp-orlando (connector): 14.1 km, band 1000-1500 ft, ATC coordination: faa-class_d-orlando-class-d-4918
+  hp-76fl -> wp-orlando (connector): 14.3 km, band 1000-1500 ft, ATC coordination: faa-class_d-orlando-class-d-4918
+  hp-fl001459 -> wp-haines-city (connector): 16.5 km, band 2500-3000 ft
+
+Edges dropped: 0
+
+Edges needing ATC coordination (Class D, FDOT yellow zone): 4
+  wp-plant-city -> wp-lakeland (I-4): faa-class_d-lakeland-class-d-876
+  wp-brandon -> wp-mulberry (SR-60): faa-class_d-lakeland-class-d-876
+  hp-01fd -> wp-orlando (connector): faa-class_d-orlando-class-d-4918
+  hp-76fl -> wp-orlando (connector): faa-class_d-orlando-class-d-4918
+
+Designated routes needing Class B clearance (FDOT special procedures): 6
+  wp-downtown-tampa -> wp-i4-i75 (I-4): faa-class_b-tampa-class-b-4828
+  wp-kissimmee -> wp-orlando (I-4): faa-class_b-orlando-class-b-4797, faa-class_b-orlando-class-b-4798, faa-class_b-orlando-class-b-4800
+  wp-downtown-tampa -> wp-brandon (SR-60): faa-class_b-tampa-class-b-4828
+  wp-orlando -> wp-haines-city (US-17): faa-class_b-orlando-class-b-4796, faa-class_b-orlando-class-b-4797, faa-class_b-orlando-class-b-4798, faa-class_b-orlando-class-b-4799, faa-class_b-orlando-class-b-4800
+  hp-85fd -> wp-kissimmee (connector): faa-class_b-orlando-class-b-4797
+  hp-fd36 -> wp-orlando (connector): faa-class_b-orlando-class-b-4797
+
+Routes between eVTOL sites:
+  ev-sef <-> ev-water-st: 2
+  ev-sef <-> ev-orl: 2
+  ev-sef <-> ev-parramore: 2
+  ev-sef <-> ev-lal: 2
+  ev-sef <-> ev-suntrax: 2
+  ev-water-st <-> ev-orl: 2
+  ev-water-st <-> ev-parramore: 2
+  ev-water-st <-> ev-lal: 2
+  ev-water-st <-> ev-suntrax: 2
+  ev-orl <-> ev-parramore: 1
+  ev-orl <-> ev-lal: 2
+  ev-orl <-> ev-suntrax: 2
+  ev-parramore <-> ev-lal: 2
+  ev-parramore <-> ev-suntrax: 2
+  ev-lal <-> ev-suntrax: 2

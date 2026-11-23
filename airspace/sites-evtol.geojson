@@ -1,0 +1,185 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "ev-sef",
+    "name": "Sebring Regional Airport",
+    "type": "evtol",
+    "program": "Phase 1A",
+    "in_focus_region": true,
+    "verified": true,
+    "source": "hand survey (geojson.io)",
+    "notes": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -81.33895,
+     27.449873
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "ev-water-st",
+    "name": "Water Street (Downtown Tampa)",
+    "type": "evtol",
+    "program": "Phase 1A",
+    "in_focus_region": true,
+    "verified": true,
+    "source": "hand survey (geojson.io)",
+    "notes": "downtown; inside TPA Class B / near Peter O. Knight (TPF)"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -82.450892,
+     27.943238
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "ev-orl",
+    "name": "Orlando Executive Airport",
+    "type": "evtol",
+    "program": "Phase 1A",
+    "in_focus_region": true,
+    "verified": true,
+    "source": "hand survey (geojson.io)",
+    "notes": ""
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -81.322179,
+     28.542355
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "ev-parramore",
+    "name": "Parramore (Downtown Orlando)",
+    "type": "evtol",
+    "program": "Phase 1A",
+    "in_focus_region": true,
+    "verified": true,
+    "source": "hand survey (geojson.io)",
+    "notes": "downtown; near ORL Class D"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -81.386595,
+     28.533955
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "ev-ksc",
+    "name": "Kennedy Space Center",
+    "type": "evtol",
+    "program": "Phase 1A",
+    "in_focus_region": false,
+    "verified": true,
+    "source": "hand survey (geojson.io)",
+    "notes": "outside the Central Florida focus box (east of -81.1)"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -80.537331,
+     28.461595
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "ev-lal",
+    "name": "Lakeland Linder Intl Airport",
+    "type": "evtol",
+    "program": "SIS reliever",
+    "in_focus_region": true,
+    "verified": true,
+    "source": "hand survey (geojson.io)",
+    "notes": "not Phase 1A; Lakeland demo site"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -82.013473,
+     27.978929
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "ctx-tpa",
+    "name": "Tampa International Airport",
+    "type": "context",
+    "program": "SIS commercial",
+    "in_focus_region": true,
+    "verified": true,
+    "source": "hand survey (geojson.io)",
+    "notes": "commercial Class B: no-go, map context only"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -82.530588,
+     27.992257
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "ctx-mco",
+    "name": "Orlando International Airport",
+    "type": "context",
+    "program": "SIS commercial",
+    "in_focus_region": true,
+    "verified": true,
+    "source": "hand survey (geojson.io)",
+    "notes": "commercial Class B: no-go, map context only"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -81.314531,
+     28.427539
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "ctx-srq",
+    "name": "Sarasota Bradenton Intl Airport",
+    "type": "context",
+    "program": "SIS commercial",
+    "in_focus_region": true,
+    "verified": true,
+    "source": "hand survey (geojson.io)",
+    "notes": "labelled 'Southwest Florida Intl' in the source file; these coordinates are SRQ"
+   },
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     -82.554544,
+     27.40138
+    ]
+   }
+  }
+ ]
+}

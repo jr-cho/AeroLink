@@ -407,12 +407,15 @@ uv run python -m aerolink.eval --scenario all --seed 42 --ablations
 
 ### 9.1 Simulator
 
-A custom kinematic simulator: point-mass aircraft along corridor polylines, with speed and climb limits per vehicle type and noise from a seeded `numpy.random.Generator`. Existing simulators were reviewed and not used: BlueSky (MIT, Python) targets airliner performance and tactical conflict resolution rather than corridor and pad capacity, and MATSim-UAM is Java and agent-based at a much larger scale.
+A custom kinematic simulator: point-mass aircraft along corridor polylines, with per-type cruise speed and range, one set of acceleration and climb limits shared by both types, and noise from a seeded `numpy.random.Generator`. Existing simulators were reviewed and not used: BlueSky (MIT, Python) targets airliner performance and tactical conflict resolution rather than corridor and pad capacity, and MATSim-UAM is Java and agent-based at a much larger scale.
 
 - 10 aircraft with the mix in §4.
 - Stochastic cruise speed per aircraft and leg, wind-like speed bias, diversions, and destination changes.
-- **Pads are physical:** an aircraft arriving at an occupied pad holds nearby until it frees up.
+- **Pads are physical:** an aircraft arriving at an occupied pad holds nearby until it frees up. 60 s after touchdown it clears to a stand if one is free (eVTOL sites: one stand per pad; helipads: one), and an aircraft leaving a stand waits for a pad slot no arrival has claimed.
+- **Range (interim rule until the E3.3 energy model):** a flight is only started, diverted, or re-planned if its remaining route fits `battery_soc × range`, with no reserve. Medical aircraft only take dispatches they can fly to and then return home from; incidents outside that service area are dropped as `dispatch_unserviceable`.
+- **Simplifications (accepted):** wind only changes ground speed along track (crosswind has no effect on speed or heading); telemetry noise is horizontal, speed and dropout only (altitude noise and GPS quality variation come with E5).
 - Unscheduled medical dispatches.
+- **Traffic realism (simulated world only, PLAN E3.3):** simulated pilots keep a physical minimum (300 m, 150 m vertical; opposite directions at different altitudes) and space arrivals by speed. Simulated vertiport operators book pad slots before departure and hold flights on the ground when none is free. Battery reserve drives diversions. Demand is a shuttle timetable plus random trips, and some background aircraft ignore the system. AeroLink itself still schedules and holds nothing (§18). The §3.4 spacing values are only measured, as bunching.
 - **Closed loop:** simulated pilots request routes, pick the top option, fly it, and accept en-route suggestions (acceptance rate is a parameter: default 100%, with a 50% sensitivity run).
 - Two modes: **offline** (simulated clock, used for training and evaluation) and **live** (real time over MQTT, used for the demo).
 

@@ -10,10 +10,10 @@ import json
 from pathlib import Path
 
 import pytest
+from conftest import EXAMPLES, load, validator
 from pydantic import ValidationError
 
 from aerolink.contracts import MODELS
-from conftest import EXAMPLES, load, validator
 
 
 def _cases(kind: str):

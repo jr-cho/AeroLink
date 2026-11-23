@@ -9,7 +9,6 @@ import json
 import re
 
 import pytest
-
 from conftest import REPO, SCHEMAS, load
 
 DOC = REPO / "docs" / "ARCHITECTURE.md"
@@ -27,7 +26,7 @@ SECTIONS = {
 
 def _doc_examples() -> dict[str, dict]:
     text = DOC.read_text()
-    section = text[text.index("### 12.2"):text.index("### 12.3")]
+    section = text[text.index("### 12.2") : text.index("### 12.3")]
     found = {}
     for title, name in SECTIONS.items():
         m = re.search(rf"\*\*{re.escape(title)}\*\*\s*```json\n(.*?)```", section, re.S)

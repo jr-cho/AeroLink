@@ -99,7 +99,7 @@ Turn FAA open data into 3D no-go volumes (shape + floor + ceiling) for Florida.
 - [x] Keep every area that touches Florida (`aerolink.airspace.clip --region florida`); raw downloads stay in gitignored `airspace/source/`
 - [x] Convert each area into a no-go volume with floor and ceiling (`aerolink.airspace.convert`), flagged `in_focus_region`
 - [x] Commit the snapshot with the FAA data cycle date (2026-10-29)
-- [ ] Add hand-modeled areas the data doesn't cover (e.g. the full MacDill base), labelled `modeled`
+- [x] Add hand-modeled areas the data doesn't cover (e.g. the full MacDill base), labelled `modeled`
 
 **Acceptance criteria**
 - `airspace/constraints-fl.geojson` covers all of Florida and contains the TPA and MCO controlled airspace, MacDill, and the Avon Park range, flagged as in the focus region
@@ -115,8 +115,8 @@ Find and map the real landing sites for both site types (ARCHITECTURE §3.2). Ae
 - [x] Collect helipads from the FDEP Airports layer (FDEM + FDOT merge)
 - [x] `aerolink.airspace.sites`: filter to Central Florida, active, non-military, medical; review sheet with nearest waypoint and distance
 - [x] Clean names and write `airspace/sites-helipads.geojson` (48 medical pads, 22 near a corridor)
-- [ ] Confirm current hospital names
-- [ ] Check every position on aerial imagery; mark `verified`
+- [x] Confirm current hospital names
+- [x] Check every position on aerial imagery; mark `verified`
 - [x] Copy the sites into the `nodes:` section of `airspace/network.yaml` (5 surveyed eVTOL sites + SunTrax, 22 helipads) with a connector each; remove the placeholder hospitals
 - [x] Add a downtown Tampa waypoint (I-4/I-275) for Tampa General, Water Street, and the EMS pad
 
@@ -137,8 +137,8 @@ Hand-write the connections; take the corridor shapes from FDOT's official highwa
 - [x] `build_network`: follow each highway as a routable graph (bridges FDOT's gaps), add connectors, choose altitude bands, apply the landing-site airspace exemption
 - [x] Apply the FDOT AAM Business Plan airspace zones: Class D with ATC coordination (avoided when possible); Class B only on designated clearance routes; Class C and special use no-go
 - [x] Add US-17/92 as a second corridor into downtown Orlando
-- [ ] Build against the real `constraints-fl.geojson`; commit `airspace/central-fl-v1.geojson` and `airspace/build-report.txt`
-- [ ] Review the result on a map (geojson.io)
+- [x] Build against the real `constraints-fl.geojson`; commit `airspace/central-fl-v1.geojson` and `airspace/build-report.txt`
+- [x] Review the result on a map (geojson.io)
 
 **Acceptance criteria**
 - One command rebuilds the network from `network.yaml`, the FDOT highways, and the constraints
@@ -168,72 +168,119 @@ Make it impossible to ship a network that touches no-go airspace.
 **Goal:** Simulated traffic running on the network, routed by the classical (non-AI) navigation method, with results we can measure.
 **Exit criteria:** Every scenario runs deterministically from a seed; B0 and B1 results are committed.
 
-### E3.1 Vehicle Types
+### E3.1 Vehicle Types ✅
 
 Define how passenger and medical aircraft differ.
 
 **Stories**
-- [ ] Define cruise speed, range, and calculation priority per vehicle type
-- [ ] Offer only destinations whose `serves` includes the vehicle type
-- [ ] Offer only routes within range
+- [x] Define cruise speed, range, and calculation priority per vehicle type
+- [x] Offer only destinations whose `serves` includes the vehicle type
+- [x] Offer only routes within range
+
+**Files**
+- `backend/src/aerolink/vehicle.py`: static `VehicleCfg` for passenger and medical
+- `backend/src/aerolink/network.py`: network loader with `nodes_for`, `shortest_paths`, range filtering, and ETA estimate
+- `backend/tests/test_vehicle.py`, `backend/tests/test_network_routing.py`: acceptance tests
 
 **Acceptance criteria**
 - A passenger aircraft is never offered a helipad, and a medical aircraft is never offered an eVTOL site (unless `serves` says so)
 - A route longer than the range is never offered
 
-### E3.2 Simulator
+### E3.2 Simulator ✅
 
 Generate realistic, repeatable traffic: 10 aircraft (7 passenger, 3 medical).
 
 **Stories**
-- [ ] Build a custom kinematic simulator (BlueSky and MATSim-UAM reviewed and not used; see ARCHITECTURE §9.1)
-- [ ] Model aircraft movement along corridors with variable speed, using a seeded `numpy.random.Generator`
-- [ ] Model pads physically: an aircraft arriving at an occupied pad holds until it frees up
-- [ ] Add diversions and destination changes
-- [ ] Add unscheduled medical dispatches
-- [ ] Close the loop: simulated pilots request routes, pick the top option, fly it, and accept suggestions (acceptance rate parameter)
-- [ ] Run on a simulated clock (offline mode)
-- [ ] Make every run reproducible from a seed
+- [x] Build a custom kinematic simulator (BlueSky and MATSim-UAM reviewed and not used; see ARCHITECTURE §9.1)
+- [x] Model aircraft movement along corridors with variable speed, using a seeded `numpy.random.Generator`
+- [x] Model pads physically: an aircraft arriving at an occupied pad holds until it frees up
+- [x] Add diversions and destination changes
+- [x] Add unscheduled medical dispatches
+- [x] Close the loop: simulated pilots request routes, pick the top option, fly it, and accept suggestions (acceptance rate parameter)
+- [x] Run on a simulated clock (offline mode)
+- [x] Make every run reproducible from a seed
+- [x] Hardening ([E3.2-hardening-plan.md](E3.2-hardening-plan.md)): invariant checker and stress matrix; every flight fits the battery and medical aircraft can always get home (interim range rule, no reserve); stands so parked aircraft free the pad; optional medical dispatch timeout
+
+**Files**
+- `backend/src/aerolink/sim/clock.py`: immutable fixed-step simulated clock (no float drift)
+- `backend/src/aerolink/sim/state.py`: `WorldState`, `AircraftState`, `PadState`, `FlightPlan`, `FlightLeg`, `WindField`
+- `backend/src/aerolink/sim/physics.py`: direction-aware edge interpolation, wind, accel/decel, climb/descent, glide path, braking to hold points
+- `backend/src/aerolink/sim/pads.py`: pad slots from clearance until the aircraft clears to a stand (or departs), FIFO queues, stands
+- `backend/src/aerolink/sim/fleet.py`: fleet creation on home stands/pads, per-aircraft RNG streams, reachable destination selection
+- `backend/src/aerolink/sim/reach.py`: range rules (`fits`, `can_get_home`, medical service area)
+- `backend/src/aerolink/sim/demand.py`: diurnal passenger demand (thinned Poisson), medical dispatches, nearest idle aircraft
+- `backend/src/aerolink/sim/telemetry.py`: contract-valid v4.0 `Telemetry` records with seeded noise and dropout
+- `backend/src/aerolink/sim/controller.py`: `RouteAdvisor` protocol, `ShortestPathAdvisor`, per-step orchestration
+- `backend/src/aerolink/sim/pilot.py`: pilot agent (departures, suggestions, destination changes, holding, diversions, stands)
+- `backend/src/aerolink/sim/operator.py`: pad grants, medical dispatch queue (service area, timeout)
+- `backend/src/aerolink/sim/events.py`: event kinds
+- `backend/src/aerolink/sim/invariants.py`: read-only `InvariantChecker` (physics, plans, range, pads, stands, events); `run_simulation(..., check_invariants=True)`
+- `backend/src/aerolink/sim/runner.py`: `run_simulation(network, scenario, seed)` → `SimulationResult` (telemetry, events, truth, `digest()`)
+- `backend/src/aerolink/sim/scenarios.py`: validated scenario loader/saver
+- `backend/scenarios/nominal_day.yaml`: example scenario
+- Tests: `backend/tests/test_sim_{clock,physics,pads_fleet,demand,telemetry,scenario_load,controller,determinism,golden,wiring,invariants,stress,reach,stands}.py`, `backend/tests/test_network_edges.py`
 
 **Acceptance criteria**
 - Two runs with the same seed produce identical output
 - One simulated hour runs in under a minute
+- Hardened (tag `e3.2-hardened`): 0 invariant violations on the stress matrix, same digest across processes, full suite under 60 s (parallel via pytest-xdist)
 
-### E3.3 Scenarios
+### E3.3 Traffic Realism
 
-Define the test situations the evaluation runs.
+Make simulated traffic behave like real operations: aircraft never overlap, waits happen on the ground before departure rather than in the air, arrivals are spaced by speed, battery reserve drives diversions, and demand is a timetable plus on-demand trips. Detailed plan: [E3.3-plan](E3.3-plan.md); T1: [E3.3-T1-plan](E3.3-T1-plan.md).
+
+These are behaviours of the **simulated world** (pilots and vertiport operators), not of AeroLink. AeroLink still never approves, schedules, or holds a flight (ARCHITECTURE §1, §18). Simulated pilots keep only a physical minimum (300 m / 150 m vertical); the 1 km / 60 s spacing in ARCHITECTURE §3.4 stays a measured metric, so routing quality still shows up as bunching. Builds on the E3.2 code; do not rewrite it. Do the stories in order: each one depends on the one before.
 
 **Stories**
-- [ ] Write scenario files: `nominal_day`, `i4_peak`, `sebring_race_weekend`, `medical_dispatch`, `slow_and_diverted`, `rogue_aircraft`, `telemetry_dropout`
-- [ ] Include labelled ground truth for injected deviations
+- [x] T0 Foundations: split `controller.py` into `operator.py` and `pilot.py`, add a per-step traffic index (`traffic.py`), a registry of event kinds (`events.py`), and per-scenario `world` toggles (all off reproduces E3.2 output exactly, checked by a golden digest)
+- [x] T1 Separation: opposite directions use different altitude halves of a corridor band; followers slow to keep the gap; aircraft take turns at junctions (medical first); holding aircraft use distinct stack points; log `bunching` and `loss_of_separation` events
+- [x] T2 Energy: per-phase battery use (hover > climb > cruise, headwind cost), reserve-based diversion while holding (`max_hold_s` kept as a cap), refuse departures that do not fit with reserve, charge during turnaround
+- [x] T3 Pad booking: per-pad slot calendar; book the arrival slot before departure; ground-hold on the pad when none is free; re-book in flight outside tolerance, falling back to airborne holding; medical may take a passenger slot
+- [x] T4 Arrival metering: pilots adjust cruise speed within vehicle limits to arrive when the booked slot opens
+- [x] T5 Schedules: scenario timetable of shuttle flights booked in advance, with the existing random demand on top
+- [x] T6 Background traffic: `BackgroundTrack` aircraft that follow a fixed 4D track and ignore the system (no requests, no bookings), included in telemetry and the traffic index; synthetic rogue tracks with labelled ground truth (real-data replay is a story in E5.1)
+
+**Acceptance criteria**
+- No two airborne aircraft come within 300 m horizontally and 150 m vertically in any committed scenario
+- On `nominal_day`, fewer than 5% of arrivals hold in the air; waits are ground holds
+- Every behaviour can be switched off per scenario; with all switched off, the output equals E3.2's
+- Same seed gives identical output; one simulated hour still runs in under a minute
+
+### E3.4 Scenarios
+
+**Goal:** Define the test situations the evaluation runs.
+
+**Stories**
+- [x] Write scenario files (needs E3.3: schedules for `i4_peak` and `sebring_race_weekend`, background tracks for `rogue_aircraft`): `nominal_day`, `i4_peak`, `sebring_race_weekend`, `medical_dispatch`, `slow_and_diverted`, `rogue_aircraft`, `telemetry_dropout`
+- [x] Include labelled ground truth for injected deviations
 
 **Acceptance criteria**
 - All 7 scenarios load and run end to end
 
-### E3.4 Classical Navigation (Baseline B1)
+### E3.5 Classical Navigation (Baseline B1)
 
 A reasonable navigation service with no AI. This is the bar AeroLink must beat (ARCHITECTURE §6).
 
 **Stories**
-- [ ] Generate candidate routes (k-shortest within range)
-- [ ] Predict arrival times from cruise speed with fixed ±60 s windows
-- [ ] Build the traffic picture from planned flights only, assumed on time
-- [ ] Predict pad and junction waits first-come-first-served, medical first (greedy)
-- [ ] Rank by predicted time including wait
-- [ ] Flag off-route aircraft with fixed bounds (300 m, time window)
+- [x] Generate candidate routes (k-shortest within range)
+- [x] Predict arrival times from cruise speed with fixed ±60 s windows
+- [x] Build the traffic picture from planned flights only, assumed on time
+- [x] Predict pad and junction waits first-come-first-served, medical first (greedy)
+- [x] Rank by predicted time including wait
+- [x] Flag off-route aircraft with fixed bounds (300 m, time window)
 
 **Acceptance criteria**
 - Medical flights are always calculated first
 - Behaviour matches ARCHITECTURE §6
 
-### E3.5 Evaluation Harness
+### E3.6 Evaluation Harness
 
 Measure every configuration the same way.
 
 **Stories**
-- [ ] Implement metrics: trip time, pad wait, time saved by suggestions, no-route count, bunching events, off-route detection, medical wait, ETA error and coverage, traffic-level accuracy
-- [ ] Run configurations B0 (shortest path, no traffic) and B1 (classical) across all scenarios
-- [ ] Write results as JSON to `backend/eval-results/`
+- [x] Implement metrics: trip time, pad wait, time saved by suggestions, no-route count, bunching events, off-route detection, medical wait, ETA error and coverage, traffic-level accuracy
+- [x] Run configurations B0 (shortest path, no traffic) and B1 (classical) across all scenarios
+- [x] Write results as JSON to `eval-results/`
 
 **Acceptance criteria**
 - One command runs all scenarios and configurations
@@ -331,6 +378,7 @@ Build a dataset of real low-altitude flights (helicopters and light aircraft) fr
 - [ ] Split tracks at the new-leg flag and at gaps over 30 s; resample to 1 Hz with the `traffic` library
 - [ ] Write Parquet locally (never committed)
 - [ ] Add the ODbL attribution text
+- [ ] Expose filtered tracks as `BackgroundTrack` replays for the simulator (E3.3 T6), as background traffic in scenarios
 
 **Acceptance criteria**
 - The dataset is reproducible with one command

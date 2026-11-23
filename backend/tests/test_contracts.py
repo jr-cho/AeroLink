@@ -7,9 +7,10 @@ Layout:
 """
 
 import pytest
+from conftest import EXAMPLES, SCHEMAS
+from conftest import load as _load
+from conftest import validator as _validator
 from jsonschema import Draft202012Validator
-
-from conftest import EXAMPLES, SCHEMAS, load as _load, validator as _validator
 
 
 def _cases(kind: str):
