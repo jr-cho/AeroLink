@@ -49,6 +49,24 @@ jobs:
       - name: Type-check
         run: uv run ty check
 
+      - name: Run M4 prediction evaluation
+        run: |
+          uv run python -m aerolink.eval.harness \
+            --network ../airspace/central-fl-v1.geojson \
+            --scenarios scenarios \
+            --configs B0 B1 A1
+          # Verify the harness produced the expected result files.
+          test -f eval-results/m4-results.json
+          python - <<'PY'
+          import json, sys
+          data = json.load(open("eval-results/m4-results.json"))
+          configs = {m["config"] for m in data}
+          scenarios = {m["scenario"] for m in data}
+          assert {"B0", "B1", "A1"} <= configs, f"missing config: {configs}"
+          assert len(scenarios) >= 7, f"expected >=7 scenarios, got {len(scenarios)}"
+          print(f"M4 results OK: {len(scenarios)} scenarios x {len(configs)} configs")
+          PY
+
   web:
     name: Web (TypeScript)
     runs-on: ubuntu-latest

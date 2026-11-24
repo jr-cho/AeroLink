@@ -40,7 +40,9 @@ def validator(name: str) -> Validator:
 import networkx as nx  # noqa: E402
 import pytest  # noqa: E402
 
+from aerolink.forecast.cv import CVForecaster  # noqa: E402
 from aerolink.network import Edge, Network  # noqa: E402
+from aerolink.routing.a1 import A1Advisor, A1Config  # noqa: E402
 
 NETWORK_FILE = REPO / "airspace" / "central-fl-v1.geojson"
 
@@ -49,6 +51,12 @@ NETWORK_FILE = REPO / "airspace" / "central-fl-v1.geojson"
 def fl_network() -> Network:
     """The committed Central Florida network (read-only: do not mutate)."""
     return Network.from_geojson(NETWORK_FILE)
+
+
+@pytest.fixture(scope="session")
+def fl_a1(fl_network: Network) -> A1Advisor:
+    """A1 advisor over the committed Central Florida network."""
+    return A1Advisor(fl_network, CVForecaster(fl_network), cfg=A1Config())
 
 
 def make_network(nodes: dict[str, dict], edges: list[tuple[str, str, float]], band=(2500, 3000)) -> Network:
