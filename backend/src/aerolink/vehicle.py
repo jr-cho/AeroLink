@@ -76,3 +76,16 @@ def vehicle_cfg(vehicle_type: VehicleType) -> VehicleCfg:
 def medical_first_order(vtype: VehicleType) -> int:
     """Sorting key that puts medical first across all other types."""
     return vehicle_cfg(vtype).calculation_priority
+
+
+def as_vehicle_type(value: str) -> VehicleType:
+    """Narrow a runtime string to the ``VehicleType`` literal union.
+
+    Raises ``ValueError`` for unknown vehicle types. This helper keeps the
+    few call sites that receive plain ``str`` (CLI args, YAML configs, test
+    fixtures) compatible with the strict ``VehicleType`` annotations used
+    throughout the rest of the code base.
+    """
+    if value not in ("passenger", "medical"):
+        raise ValueError(f"unknown vehicle_type: {value!r}")
+    return value  # type: ignore[return-value]

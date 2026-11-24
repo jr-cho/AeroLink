@@ -1,0 +1,43 @@
+# E3.4: scenario set, starting with nominal_day.
+name: nominal_day
+seed: 42
+start_time: "2026-11-20T07:00:00-05:00"
+duration_s: 3600
+dt_s: 1.0
+fleet:
+  passenger: 7
+  medical: 3
+pad_turnaround_time_s: 300
+max_hold_s: 600
+suggestion_acceptance_rate: 1.0
+destination_change_probability: 0.02
+cruise_speed_sigma: 0.03
+route_options: 3
+demand:
+  peak_rate_per_hour: 1.5
+  off_peak_rate_per_hour: 0.3
+  morning_peak_hour: 8.0
+  evening_peak_hour: 18.0
+  peak_width_h: 1.5
+  return_home_probability: 0.6
+  medical_dispatch_mean_interval_s: 1800
+wind:
+  speed_mps: 5.0
+  direction_deg: 270.0
+  gust_fraction: 0.2
+telemetry_noise:
+  position_m: 5.0
+  speed_mps: 0.5
+  dropout_rate: 0.0
+# E3.3 traffic-realism behaviours: each is switched on once built and hardened
+# (separation: E3.3 T1, docs/E3.3-T1-plan.md; energy: T2; pad_booking/arrival_metering: T3/T4).
+world:
+  separation: true
+  energy: true
+  pad_booking: true
+  arrival_metering: true
+  schedules: false
+  background_traffic: false
+# E3.3 T5: example scheduled shuttle.  Not enabled by default so the golden
+# digest stays stable; set world.schedules: true to run them.
+schedule: []

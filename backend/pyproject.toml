@@ -4,16 +4,21 @@ version = "0.1.0"
 description = "AeroLink: navigation for Florida's low-altitude air corridors with AI traffic prediction"
 requires-python = ">=3.12"
 dependencies = [
+    "chronos-forecasting>=2.3.2",
     "jsonschema>=4.26.0",
+    "lightgbm>=4.7.0",
     "networkx>=3.7",
     "numpy>=2.0",
+    "ortools>=9.15.6755",
     "pydantic>=2.9",
     "pyogrio>=0.13.0",
     "pyproj>=3.8.0",
     "pyyaml>=6.0.4",
     "referencing>=0.37.0",
     "rfc3339-validator>=0.1.4",
+    "scikit-learn>=1.9.1",
     "shapely>=2.2.0",
+    "torch>=2.15.0",
 ]
 
 [build-system]

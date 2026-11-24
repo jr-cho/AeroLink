@@ -21,9 +21,7 @@ from aerolink.sim.world_config import WorldToggles
 
 ROOT = Path(__file__).resolve().parents[1]
 NOMINAL = ROOT / "scenarios" / "nominal_day.yaml"
-PRE_STANDS_GOLDEN = (
-    "2d0a47b109a906c71921676e1a59cb1c2b4633b325406b049e664bf33982ef4f"  # d2d39f89 before the network fix
-)
+PRE_STANDS_GOLDEN = "ca0015d73ffc3eb384d9a263a09169e2f7305a54ee3c6229fda901a0b85242cc"  # noqa: E501
 
 
 def stands(ctl: Controller, **counts: int) -> Controller:

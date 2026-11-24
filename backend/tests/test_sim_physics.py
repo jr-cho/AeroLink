@@ -235,13 +235,12 @@ def test_battery_drains_linearly_when_energy_disabled(line_network: Network):
 
 
 def test_battery_drains_with_energy_model(line_network: Network):
-    from aerolink.sim.energy import step_energy_drain
     from aerolink.sim.world_config import EnergyConfig
 
     energy = EnergyConfig()
     ac = make_ac(line_network, ["a", "w1", "w2", "b"])
     total = ac.remaining_route_m()
-    trace = fly(ac, energy=energy)
+    fly(ac, energy=energy)
     # Energy model should consume at least the cruise energy for the route,
     # plus the takeoff/climb and landing/hover transition allowance.
     assert ac.battery_soc < 1 - total / 160_000
