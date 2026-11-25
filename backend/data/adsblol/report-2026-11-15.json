@@ -1,0 +1,23 @@
+{
+  "day": "2026-11-15",
+  "source": "readsb-prod-0",
+  "attribution": "Contains data from adsb.lol, licensed under the Open Database License (ODbL 1.0).",
+  "counts": {
+    "aircraft_candidate": 1141,
+    "aircraft_dropped_airline_callsign": 1898,
+    "aircraft_dropped_category_not_light_or_rotor": 368,
+    "aircraft_dropped_military": 14,
+    "aircraft_dropped_outside_region": 57666,
+    "aircraft_kept": 774,
+    "aircraft_seen": 61087,
+    "files_read": 61087,
+    "points_dropped_point_altitude": 191276,
+    "points_dropped_point_source": 7595,
+    "points_dropped_point_speed": 18556,
+    "points_in_region": 601560,
+    "points_kept": 384133,
+    "segment_seconds": 1558904,
+    "segments_dropped_too_short": 1352,
+    "segments_kept": 3338
+  }
+}

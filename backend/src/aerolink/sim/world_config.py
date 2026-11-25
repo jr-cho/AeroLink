@@ -104,6 +104,9 @@ class BackgroundTrafficConfig:
     speed_mps: float = 50.0
     speed_sigma: float = 10.0
     seed_offset: int = 12345  # deterministic for benchmarking; change for randomness
+    # Real-data replay (PLAN E5.1): a segments Parquet from backend/data/adsblol/. When set,
+    # real flights on the corridors replace the synthetic tracks; `count` > 0 caps how many.
+    replay_file: str = ""
 
     def __post_init__(self) -> None:
         if self.count < 0:

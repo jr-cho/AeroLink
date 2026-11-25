@@ -399,14 +399,14 @@ Tell aircraft already flying when a faster route appears.
 Build a dataset of real low-altitude flights (helicopters and light aircraft) from adsb.lol.
 
 **Stories**
-- [ ] Download daily releases (start with 14 days); stream the split tar parts and extract only `traces/`
-- [ ] Write a parser against the readsb trace format (README-json); handle `.json` files that contain gzip
-- [ ] Keep only traces inside the region
-- [ ] Keep only aircraft ≤3,000 ft and 40–160 kt in rotorcraft (A7) / light categories; exclude airline, heavy, and military traffic; drop `mlat` points
-- [ ] Split tracks at the new-leg flag and at gaps over 30 s; resample to 1 Hz with the `traffic` library
-- [ ] Write Parquet locally (never committed)
-- [ ] Add the ODbL attribution text
-- [ ] Expose filtered tracks as `BackgroundTrack` replays for the simulator (E3.3 T6), as background traffic in scenarios
+- [x] Download daily releases (start with 14 days); stream the split tar parts and extract only `traces/`
+- [x] Write a parser against the readsb trace format (README-json); handle `.json` files that contain gzip
+- [x] Keep only traces inside the region
+- [x] Keep only aircraft ≤3,000 ft and 40–160 kt in rotorcraft (A7) / light categories; exclude airline, heavy, and military traffic; drop `mlat` points
+- [x] Split tracks at the new-leg flag and at gaps over 30 s; resample to 1 Hz
+- [x] Write the cleaned segments as Parquet to `backend/data/adsblol/` (committed under ODbL; raw data never stored)
+- [x] Add the ODbL attribution text
+- [x] Expose filtered tracks as `BackgroundTrack` replays for the simulator (E3.3 T6), as background traffic in scenarios
 
 **Acceptance criteria**
 - The dataset is reproducible with one command

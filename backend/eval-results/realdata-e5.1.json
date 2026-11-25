@@ -1,0 +1,108 @@
+{
+  "attribution": "Contains data from adsb.lol, licensed under the Open Database License (ODbL 1.0).",
+  "filters": "aerolink.realdata.config.FilterConfig defaults",
+  "days": [
+    {
+      "day": "2026-11-09",
+      "source": "readsb-prod-0",
+      "aircraft_kept": 755,
+      "segments_kept": 3888
+    },
+    {
+      "day": "2026-11-10",
+      "source": "readsb-prod-0",
+      "aircraft_kept": 800,
+      "segments_kept": 4277
+    },
+    {
+      "day": "2026-11-11",
+      "source": "readsb-prod-0",
+      "aircraft_kept": 823,
+      "segments_kept": 4489
+    },
+    {
+      "day": "2026-11-12",
+      "source": "readsb-prod-0",
+      "aircraft_kept": 776,
+      "segments_kept": 4371
+    },
+    {
+      "day": "2026-11-13",
+      "source": "readsb-prod-0",
+      "aircraft_kept": 800,
+      "segments_kept": 3501
+    },
+    {
+      "day": "2026-11-14",
+      "source": "readsb-prod-0",
+      "aircraft_kept": 779,
+      "segments_kept": 3324
+    },
+    {
+      "day": "2026-11-15",
+      "source": "readsb-prod-0",
+      "aircraft_kept": 774,
+      "segments_kept": 3338
+    },
+    {
+      "day": "2026-11-16",
+      "source": "readsb-prod-0",
+      "aircraft_kept": 714,
+      "segments_kept": 3142
+    },
+    {
+      "day": "2026-11-17",
+      "source": "readsb-prod-0",
+      "aircraft_kept": 321,
+      "segments_kept": 1055
+    },
+    {
+      "day": "2026-11-18",
+      "source": "readsb-prod-0",
+      "aircraft_kept": 290,
+      "segments_kept": 809
+    },
+    {
+      "day": "2026-11-19",
+      "source": "readsb-prod-0",
+      "aircraft_kept": 232,
+      "segments_kept": 578
+    },
+    {
+      "day": "2026-11-20",
+      "source": "readsb-prod-0",
+      "aircraft_kept": 214,
+      "segments_kept": 500
+    },
+    {
+      "day": "2026-11-21",
+      "source": "readsb-prod-0",
+      "aircraft_kept": 443,
+      "segments_kept": 1585
+    },
+    {
+      "day": "2026-11-22",
+      "source": "readsb-prod-0",
+      "aircraft_kept": 494,
+      "segments_kept": 1736
+    }
+  ],
+  "totals": {
+    "aircraft_candidate": 13067,
+    "aircraft_dropped_airline_callsign": 26572,
+    "aircraft_dropped_category_not_light_or_rotor": 4303,
+    "aircraft_dropped_military": 251,
+    "aircraft_dropped_outside_region": 929252,
+    "aircraft_kept": 8215,
+    "aircraft_seen": 973445,
+    "files_read": 973445,
+    "points_dropped_point_altitude": 1966723,
+    "points_dropped_point_source": 94905,
+    "points_dropped_point_speed": 213926,
+    "points_in_region": 6705800,
+    "points_kept": 4430246,
+    "segment_seconds": 17661956,
+    "segments_dropped_too_short": 16616,
+    "segments_kept": 36593
+  }
+}

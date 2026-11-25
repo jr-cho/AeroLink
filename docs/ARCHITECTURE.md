@@ -480,8 +480,8 @@ A custom kinematic simulator: point-mass aircraft along corridor polylines, with
    - drop airline callsigns, heavy categories, and military
    - drop points whose `source_type` is `mlat` (prone to outliers)
 5. **Segment** at the "start of a new leg" flag and at gaps > 30 s.
-6. **Resample** to 1 Hz with the [`traffic`](https://github.com/xoolive/traffic) library (MIT), in a data-prep step only.
-7. **Write** Parquet to `backend/data/realdata/` (gitignored, never committed).
+6. **Resample** to 1 Hz by linear interpolation (NumPy; track angles unwrapped), dropping segments shorter than 60 s.
+7. **Write** one Parquet file of clean segments per day to `backend/data/adsblol/`, plus a per-day report of what each filter removed. The raw day is streamed and never written to disk (`python -m aerolink.realdata.fetch`).
 
 ### 10.3 Use
 
@@ -494,6 +494,7 @@ A custom kinematic simulator: point-mass aircraft along corridor polylines, with
 - **Attribution:** "Contains data from adsb.lol, licensed under ODbL 1.0", shown in the README and the web footer.
 - **Share-alike:** any derived database that is published (e.g. the filtered tracks) must be released under ODbL.
 - **Raw data:** not redistributed. The pipeline script reproduces it from the source.
+- **Cleaned data:** the filtered segments in `backend/data/adsblol/` are a derived database, committed under ODbL with attribution (`backend/data/adsblol/README.md`).
 
 ---
 
