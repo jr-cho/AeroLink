@@ -89,30 +89,3 @@ def test_expected_flights_weight_by_probability(fl_network: Network, synthetic: 
     exp = model.expected_flights(8.0, 0.0, lambda a, b: 600.0)
     assert exp and all(0 < p <= 1 for p, *_ in exp)
     assert all(lo <= mid <= hi for _, _, lo, mid, hi in exp)
-```
-
-### 8b. Run the checks
-
-Command:
-
-```bash
-uv run ruff format
-uv run ruff check --fix
-uv run pytest -q tests/test_e54_demand.py
-```
-
-Expect **`5 passed`**.
-
-### 8c. Generate the synthetic history
-
-Command:
-
-```bash
-uv run python -m aerolink.demand.synthetic
-```
-
-Expected output (the numbers will match exactly, because the seed is fixed):
-
-```text
-SYNTHETIC demand, 28 days: 4,217 passenger departures (151/day, target 163), 1,380 medical dispatches
-wrote .../backend/data/synthetic-demand/counts.parquet and trips.parquet
