@@ -1,0 +1,187 @@
+{
+  "attribution": "Contains data from adsb.lol, licensed under the Open Database License (ODbL 1.0).",
+  "split": {
+    "train_days": [
+      "2026-11-09",
+      "2026-11-10",
+      "2026-11-11",
+      "2026-11-12",
+      "2026-11-13",
+      "2026-11-14",
+      "2026-11-15",
+      "2026-11-16",
+      "2026-11-17",
+      "2026-11-18"
+    ],
+    "held_out_days": [
+      "2026-11-19",
+      "2026-11-20",
+      "2026-11-21",
+      "2026-11-22"
+    ]
+  },
+  "samples": {
+    "held_out_total": 50580,
+    "scored": 5000,
+    "stride_s": 30,
+    "seed": 42
+  },
+  "chronos_model": "autogluon/chronos-2-small",
+  "ms_per_sample": {
+    "cv": 0.06,
+    "chronos": 33.65,
+    "aerolink-gbm": 1.02
+  },
+  "results": {
+    "cv": [
+      {
+        "horizon_s": 30,
+        "n": 5000,
+        "fde_mean_m": 286.6,
+        "fde_median_m": 105.1,
+        "fde_p90_m": 901.7,
+        "ade_mean_m": 286.6,
+        "coverage_east": 0.237,
+        "coverage_north": 0.234,
+        "coverage_up": 0.425,
+        "coverage_horizontal": 0.105
+      },
+      {
+        "horizon_s": 60,
+        "n": 4599,
+        "fde_mean_m": 867.6,
+        "fde_median_m": 355.5,
+        "fde_p90_m": 2624.7,
+        "ade_mean_m": 577.0,
+        "coverage_east": 0.242,
+        "coverage_north": 0.247,
+        "coverage_up": 0.347,
+        "coverage_horizontal": 0.114
+      },
+      {
+        "horizon_s": 120,
+        "n": 3924,
+        "fde_mean_m": 2347.9,
+        "fde_median_m": 1214.9,
+        "fde_p90_m": 6256.1,
+        "ade_mean_m": 1157.1,
+        "coverage_east": 0.2,
+        "coverage_north": 0.209,
+        "coverage_up": 0.287,
+        "coverage_horizontal": 0.099
+      },
+      {
+        "horizon_s": 300,
+        "n": 2585,
+        "fde_mean_m": 8264.2,
+        "fde_median_m": 6945.7,
+        "fde_p90_m": 18141.3,
+        "ade_mean_m": 2914.4,
+        "coverage_east": 0.129,
+        "coverage_north": 0.129,
+        "coverage_up": 0.225,
+        "coverage_horizontal": 0.051
+      }
+    ],
+    "chronos": [
+      {
+        "horizon_s": 30,
+        "n": 5000,
+        "fde_mean_m": 370.9,
+        "fde_median_m": 254.5,
+        "fde_p90_m": 845.6,
+        "ade_mean_m": 370.9,
+        "coverage_east": 0.687,
+        "coverage_north": 0.7,
+        "coverage_up": 0.665,
+        "coverage_horizontal": 0.499
+      },
+      {
+        "horizon_s": 60,
+        "n": 4599,
+        "fde_mean_m": 1007.9,
+        "fde_median_m": 698.6,
+        "fde_p90_m": 2307.7,
+        "ade_mean_m": 689.6,
+        "coverage_east": 0.696,
+        "coverage_north": 0.715,
+        "coverage_up": 0.672,
+        "coverage_horizontal": 0.493
+      },
+      {
+        "horizon_s": 120,
+        "n": 3924,
+        "fde_mean_m": 3002.9,
+        "fde_median_m": 2722.6,
+        "fde_p90_m": 5382.5,
+        "ade_mean_m": 1456.2,
+        "coverage_east": 0.625,
+        "coverage_north": 0.644,
+        "coverage_up": 0.643,
+        "coverage_horizontal": 0.405
+      },
+      {
+        "horizon_s": 300,
+        "n": 2585,
+        "fde_mean_m": 9760.9,
+        "fde_median_m": 10022.0,
+        "fde_p90_m": 15782.6,
+        "ade_mean_m": 3505.7,
+        "coverage_east": 0.41,
+        "coverage_north": 0.428,
+        "coverage_up": 0.525,
+        "coverage_horizontal": 0.196
+      }
+    ],
+    "aerolink-gbm": [
+      {
+        "horizon_s": 30,
+        "n": 5000,
+        "fde_mean_m": 223.6,
+        "fde_median_m": 103.5,
+        "fde_p90_m": 617.8,
+        "ade_mean_m": 223.6,
+        "coverage_east": 0.857,
+        "coverage_north": 0.856,
+        "coverage_up": 0.825,
+        "coverage_horizontal": 0.772
+      },
+      {
+        "horizon_s": 60,
+        "n": 4599,
+        "fde_mean_m": 702.3,
+        "fde_median_m": 365.1,
+        "fde_p90_m": 1925.1,
+        "ade_mean_m": 462.7,
+        "coverage_east": 0.868,
+        "coverage_north": 0.874,
+        "coverage_up": 0.81,
+        "coverage_horizontal": 0.793
+      },
+      {
+        "horizon_s": 120,
+        "n": 3924,
+        "fde_mean_m": 1890.3,
+        "fde_median_m": 1187.1,
+        "fde_p90_m": 4661.5,
+        "ade_mean_m": 930.7,
+        "coverage_east": 0.873,
+        "coverage_north": 0.887,
+        "coverage_up": 0.805,
+        "coverage_horizontal": 0.8
+      },
+      {
+        "horizon_s": 300,
+        "n": 2585,
+        "fde_mean_m": 6449.0,
+        "fde_median_m": 5107.2,
+        "fde_p90_m": 14153.4,
+        "ade_mean_m": 2289.1,
+        "coverage_east": 0.876,
+        "coverage_north": 0.882,
+        "coverage_up": 0.816,
+        "coverage_horizontal": 0.789
+      }
+    ]
+  }
+}

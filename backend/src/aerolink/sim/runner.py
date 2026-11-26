@@ -10,6 +10,7 @@ import hashlib
 import json
 import math
 from dataclasses import dataclass, field
+from pathlib import Path
 from uuid import UUID
 
 import numpy as np
@@ -104,7 +105,18 @@ def run_simulation(
     background_aircraft: list[BackgroundAircraft] = []
     background_states: list[BackgroundState] = []
     if scenario.world.background_traffic:
-        background_aircraft = generate_tracks(network, scenario.background_traffic, world.rng)
+        if scenario.background_traffic.replay_file:
+            from aerolink.realdata.replay import load_replay  # real flights (PLAN E5.1)
+
+            background_aircraft = load_replay(
+                Path(scenario.background_traffic.replay_file),
+                network,
+                scenario.start_time,
+                scenario.duration_s,
+                limit=scenario.background_traffic.count,
+            )
+        else:
+            background_aircraft = generate_tracks(network, scenario.background_traffic, world.rng)
     cfg = ControllerConfig(
         dt_s=scenario.dt_s,
         start_local_hour=clock.local_hour(),
@@ -129,6 +141,9 @@ def run_simulation(
         cfg,
         background_aircraft=background_aircraft,
     )
+    bind = getattr(controller.advisor, "bind", None)  # route engines that read live traffic (PLAN E5.7)
+    if callable(bind):
+        bind(world, controller)
     telemetry: list[dict] = []
     truth: list[dict] = []
     steps = math.ceil(scenario.duration_s / scenario.dt_s - 1e-9)

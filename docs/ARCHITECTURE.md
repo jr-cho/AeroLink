@@ -316,7 +316,7 @@ Predicts flights that haven't been planned yet (the "traffic that isn't on the m
 
 Predicted flights become **expected flights**. Their arrivals are added to the traffic forecast, weighted by probability.
 
-**Demand data is synthetic** (no public UAM demand dataset for the region was found). The simulator generates it with diurnal Poisson patterns, scaled from the FDOT AAM Business Plan's 2027 passenger-trip forecast, and it's labelled synthetic everywhere.
+**Demand data is synthetic** (no public UAM demand dataset for the region was found). The simulator generates it with diurnal Poisson patterns, scaled from the FDOT AAM Business Plan's 2027 passenger-trip forecast, and it's labelled synthetic everywhere. Scale: FDOT's low 2027 figure (220,000 trips) × a 27% Central Florida share (assumed, from population) ≈ 163 passenger departures per day (`aerolink.demand.synthetic`).
 
 ### 7.3 Traffic forecast (derived)
 
@@ -332,7 +332,7 @@ Edges get a traffic level from the nodes they lead into. Every hot spot can be t
 ### 7.4 Off-route detection
 
 No maintained library for aircraft conformance monitoring exists, so this is custom code on standard tools:
-- **Band check:** the aircraft is outside its calibrated forecast interval (position head p05–p95, or its ETA window) for ≥3 consecutive samples.
+- **Band check:** the aircraft is outside its calibrated forecast interval for ≥3 consecutive checks, one check every 10 s (1 Hz samples are not independent): the position head's p01–p99 box from 30 s earlier, a learned route tolerance (LightGBM p99 of how far clean flights stray, given speed and the turn ahead) instead of a fixed 300 m, or its ETA window (it can no longer arrive inside its p99 arrival time). An aircraft is flagged when the route tolerance or ETA window check fires, or when the position band and the anomaly score agree.
 - **Anomaly score:** scikit-learn `IsolationForest` on residual features (cross-track error, speed deviation, vertical-rate deviation), trained on clean real-data legs (§10).
 
 When an aircraft is flagged:
@@ -402,7 +402,7 @@ Offline, in one Python process with a simulated clock and deterministic seeds. R
 
 ```bash
 cd backend
-uv run python -m aerolink.eval --scenario all --seed 42 --ablations
+uv run python -m aerolink.eval.ablations --update-docs
 ```
 
 ### 9.1 Simulator
@@ -443,6 +443,23 @@ A custom kinematic simulator: point-mass aircraft along corridor polylines, with
 | A4 | A3 + AI off-route detection |
 | A5 | **full AeroLink** (A4 + risk ranking + en-route suggestions) |
 
+<!-- ablation-table:start -->
+Measured over 7 scenarios, each scenario's own seed (`python -m aerolink.eval.ablations`, `backend/eval-results/m5-ablations.json`). Times in seconds; trips = completed flights.
+
+| # | Configuration | Trips | Mean trip | p95 trip | Holding / trip | No route | Suggestions | Bunching | Medical response |
+|---|---|---|---|---|---|---|---|---|---|
+| B0 | shortest path, no traffic information | 45 | 1,029 | 1,672 | 0.0 | 1132 | 0 | 8 | 734 |
+| B1 | **classical navigation** (§6), no AI | 45 | 1,029 | 1,672 | 0.0 | 1132 | 0 | 8 | 734 |
+| A1 | B1 + AI ETA windows (`cv` ETAs in simulation, see PLAN E4.2) | 45 | 1,029 | 1,672 | 0.0 | 1132 | 0 | 8 | 734 |
+| A2 | B1 + AI ETA windows (`aerolink-gbm`) | 45 | 1,029 | 1,672 | 0.0 | 1132 | 0 | 8 | 734 |
+| A3 | A2 + demand forecaster | 45 | 1,029 | 1,672 | 0.0 | 1132 | 0 | 8 | 734 |
+| A4 | A3 + AI off-route detection | 45 | 1,029 | 1,672 | 0.0 | 1132 | 0 | 8 | 734 |
+| A5 | **full AeroLink** (A4 + risk ranking + en-route suggestions) | 45 | 1,029 | 1,672 | 0.0 | 1132 | 0 | 8 | 734 |
+| A5@50% | A5, half of the suggestions accepted (sensitivity) | 45 | 1,029 | 1,672 | 0.0 | 1132 | 0 | 8 | 734 |
+
+**B1 vs A5 (as measured):** mean trip time +0 s (+0.0%), holding per trip +0.0 s, bunching events +0.
+<!-- ablation-table:end -->
+
 ### 9.4 Metrics
 
 | Area | Metric |
@@ -480,8 +497,8 @@ A custom kinematic simulator: point-mass aircraft along corridor polylines, with
    - drop airline callsigns, heavy categories, and military
    - drop points whose `source_type` is `mlat` (prone to outliers)
 5. **Segment** at the "start of a new leg" flag and at gaps > 30 s.
-6. **Resample** to 1 Hz with the [`traffic`](https://github.com/xoolive/traffic) library (MIT), in a data-prep step only.
-7. **Write** Parquet to `backend/data/realdata/` (gitignored, never committed).
+6. **Resample** to 1 Hz by linear interpolation (NumPy; track angles unwrapped), dropping segments shorter than 60 s.
+7. **Write** one Parquet file of clean segments per day to `backend/data/adsblol/`, plus a per-day report of what each filter removed. The raw day is streamed and never written to disk (`python -m aerolink.realdata.fetch`).
 
 ### 10.3 Use
 
@@ -494,6 +511,7 @@ A custom kinematic simulator: point-mass aircraft along corridor polylines, with
 - **Attribution:** "Contains data from adsb.lol, licensed under ODbL 1.0", shown in the README and the web footer.
 - **Share-alike:** any derived database that is published (e.g. the filtered tracks) must be released under ODbL.
 - **Raw data:** not redistributed. The pipeline script reproduces it from the source.
+- **Cleaned data:** the filtered segments in `backend/data/adsblol/` are a derived database, committed under ODbL with attribution (`backend/data/adsblol/README.md`).
 
 ---
 
