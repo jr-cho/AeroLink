@@ -1,0 +1,62 @@
+{
+  "model": "aerolink-gbm",
+  "seed": 42,
+  "sim_train_seeds": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "sim_test_seeds": [
+    101,
+    102
+  ],
+  "scenarios": [
+    "i4_peak",
+    "medical_dispatch",
+    "nominal_day",
+    "rogue_aircraft",
+    "sebring_race_weekend",
+    "slow_and_diverted",
+    "telemetry_dropout"
+  ],
+  "real_days": {
+    "train": [
+      "2026-11-09",
+      "2026-11-10",
+      "2026-11-11",
+      "2026-11-12",
+      "2026-11-13",
+      "2026-11-14",
+      "2026-11-15",
+      "2026-11-16",
+      "2026-11-17",
+      "2026-11-18"
+    ],
+    "held_out": [
+      "2026-11-19",
+      "2026-11-20",
+      "2026-11-21",
+      "2026-11-22"
+    ]
+  },
+  "coverage_target": 0.8,
+  "samples": {
+    "position_fit_and_calibration": {
+      "30": 463836,
+      "60": 433783,
+      "120": 379915,
+      "300": 268744
+    },
+    "eta": 11490
+  },
+  "libraries": {
+    "lightgbm": "4.7.0",
+    "mapie": "1.6.0",
+    "scikit-learn": "1.9.1",
+    "numpy": "2.5.5"
+  },
+  "sha256": "f6cfd0cc348dd7b6c212b6ca188fcd5e28b2d0c466035dd2f56e1c720a1c15c5"
+}
