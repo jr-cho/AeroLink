@@ -141,6 +141,9 @@ def run_simulation(
         cfg,
         background_aircraft=background_aircraft,
     )
+    bind = getattr(controller.advisor, "bind", None)  # route engines that read live traffic (PLAN E5.7)
+    if callable(bind):
+        bind(world, controller)
     telemetry: list[dict] = []
     truth: list[dict] = []
     steps = math.ceil(scenario.duration_s / scenario.dt_s - 1e-9)

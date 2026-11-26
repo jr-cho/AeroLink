@@ -319,7 +319,7 @@ Add the pretrained model from Hugging Face, used without training.
 - [x] Integrate Chronos-2 for both heads with `chronos-forecasting`; default weights `autogluon/chronos-2-small`
 - [x] Map its quantile outputs to p10/p50/p90
 - [ ] Measure CPU inference time and memory for 11 aircraft, for `chronos-2-small` and `amazon/chronos-2`; record the smallest VM size that keeps the 10 s refresh
-- [ ] Check whether the installed library version supports fine-tuning
+- [x] Check whether the installed library version supports fine-tuning (yes: `Chronos2Pipeline.fit`, full or LoRA, in chronos-forecasting 2.3.2)
 
 **Files**
 - `backend/src/aerolink/forecast/chronos.py`: `ChronosForecaster`
@@ -417,8 +417,10 @@ Build a dataset of real low-altitude flights (helicopters and light aircraft) fr
 Test the forecasters on real flights.
 
 **Stories**
-- [ ] Split by day into training and held-out sets
-- [ ] Compare `cv` and `chronos` on the held-out days (position head)
+- [x] Split by day into training and held-out sets
+- [x] Compare `cv` and `chronos` on the held-out days (position head)
+
+**Files** (under `backend/`): `realdata/samples.py`, `realdata/benchmark.py`, `forecast/chronos.py` (Chronos-2 API), `eval-results/realdata-e5.2.json`
 
 **Acceptance criteria**
 - Forecast error per horizon is committed for both forecasters
@@ -428,10 +430,12 @@ Test the forecasters on real flights.
 A model trained on simulated and real Central Florida data.
 
 **Stories**
-- [ ] Build features: kinematics, vehicle type, route context, traffic ahead, time of day
-- [ ] Train both heads on simulated data plus the real training days
-- [ ] Calibrate the intervals with MAPIE `ConformalizedQuantileRegressor`; report measured p10–p90 coverage against the 80% target
-- [ ] Version the model files with their training seeds
+- [x] Build features: kinematics, vehicle type, route context, traffic ahead, time of day
+- [x] Train both heads on simulated data plus the real training days
+- [x] Calibrate the intervals with MAPIE `ConformalizedQuantileRegressor`; report measured p10–p90 coverage against the 80% target
+- [x] Version the model files with their training seeds
+
+**Files** (under `backend/`): `forecast/features.py`, `forecast/simdata.py`, `forecast/gbm.py`, `forecast/train_gbm.py`, `models/aerolink-gbm/`, `eval-results/aerolink-gbm-e5.3.json`
 
 **Acceptance criteria**
 - Results reported against `cv` and `chronos` on both simulated and real held-out data
@@ -441,10 +445,12 @@ A model trained on simulated and real Central Florida data.
 Predict flights before they are planned, so traffic that isn't on the map yet still shows up in the forecast.
 
 **Stories**
-- [ ] Generate synthetic demand (diurnal Poisson) scaled from the FDOT AAM Business Plan's 2027 passenger-trip forecast; label it synthetic
-- [ ] Passenger: departures per `evtol` site per 15 min (Chronos-2) and destinations (LightGBM)
-- [ ] Medical: dispatches per `helipad` per 15 min (Chronos-2)
-- [ ] Add expected flights to the traffic forecast, weighted by probability
+- [x] Generate synthetic demand (diurnal Poisson) scaled from the FDOT AAM Business Plan's 2027 passenger-trip forecast; label it synthetic
+- [x] Passenger: departures per `evtol` site per 15 min (Chronos-2) and destinations (LightGBM)
+- [x] Medical: dispatches per `helipad` per 15 min (Chronos-2)
+- [x] Add expected flights to the traffic forecast, weighted by probability
+
+**Files** (under `backend/`): `demand/synthetic.py`, `demand/forecaster.py`, `demand/evaluate.py`, `data/synthetic-demand/` (synthetic), `eval-results/demand-e5.4.json`
 
 **Acceptance criteria**
 - Accuracy reported against the simple baselines (mean rate, last schedule, constant rate)
@@ -454,10 +460,12 @@ Predict flights before they are planned, so traffic that isn't on the map yet st
 Detect aircraft leaving their predicted path, using learned tolerance instead of fixed bounds.
 
 **Stories**
-- [ ] Flag aircraft outside their calibrated band for 3 or more consecutive samples
-- [ ] Train a scikit-learn `IsolationForest` on residual features (cross-track error, speed and vertical-rate deviation) from clean real-data legs
-- [ ] Set the flight to `off_route` and send fresh route options from the current position ("recalculating")
-- [ ] Spread the flagged aircraft's possible positions into the traffic forecast
+- [x] Flag aircraft outside their calibrated band for 3 or more consecutive checks (p01–p99, one check every 10 s), outside a learned route tolerance, or unable to arrive inside their ETA window
+- [x] Train a scikit-learn `IsolationForest` on residual features (cross-track error, speed and vertical-rate deviation) from clean real-data legs
+- [x] Set the flight to `off_route` and send fresh route options from the current position ("recalculating")
+- [x] Spread the flagged aircraft's possible positions into the traffic forecast
+
+**Files** (under `backend/`): `offroute/detector.py`, `offroute/evaluate.py`, `models/offroute/`, `routing/aerolink.py` (`recalculate`, reachable mass), `eval-results/offroute-e5.5.json`
 
 **Acceptance criteria**
 - Detection precision, recall, and latency reported against the fixed-bounds baseline on `rogue_aircraft`
@@ -467,8 +475,10 @@ Detect aircraft leaving their predicted path, using learned tolerance instead of
 Plain-language summary of the route options, like a maps app.
 
 **Stories**
-- [ ] Call OpenRouter (`LLM_BASE_URL`, `LLM_MODEL`, `LLM_API_KEY`) to generate a two-sentence summary from the structured route data
-- [ ] Reject any summary whose numbers don't match the data; fall back to a template
+- [x] Call OpenRouter (`LLM_BASE_URL`, `LLM_MODEL`, `LLM_API_KEY`) to generate a two-sentence summary from the structured route data
+- [x] Reject any summary whose numbers don't match the data; fall back to a template
+
+**Files** (under `backend/`): `summary/llm.py`, `summary/evaluate.py`, `eval-results/summary-e5.6.json`
 
 **Acceptance criteria**
 - No summary with a mismatched number reaches a user
@@ -479,9 +489,11 @@ Plain-language summary of the route options, like a maps app.
 Measure what each AI component adds.
 
 **Stories**
-- [ ] Run configurations A2–A5 across all scenarios
-- [ ] Run A5 with a 50% suggestion acceptance rate as a sensitivity check
-- [ ] Publish the B1 vs A5 comparison
+- [x] Run configurations A2–A5 across all scenarios
+- [x] Run A5 with a 50% suggestion acceptance rate as a sensitivity check
+- [x] Publish the B1 vs A5 comparison
+
+**Files** (under `backend/`): `routing/aerolink.py`, `eval/ablations.py`, `eval-results/m5-ablations.json` and `.md`
 
 **Acceptance criteria**
 - The ablation table in ARCHITECTURE §9.3 is fully populated from committed runs

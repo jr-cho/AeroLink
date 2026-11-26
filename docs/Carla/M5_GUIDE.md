@@ -14,6 +14,27 @@ This one guide takes you through **all of Milestone 5** of AeroLink, from an emp
 
 **M5 is done when** (from `docs/PLAN.md`): *the full ablation table and the real-data results are committed and reproducible.* At the end of this guide both are.
 
+## Where you are now (revised 2026-11-25)
+
+This guide was revised after E5.1 was finished, so you don't repeat anything. Read this box first.
+
+| Part | Status | What to do |
+|---|---|---|
+| 1–2 Codespace and setup | done | Skip in your existing Codespace. In a new one, do Part 2 only (`cd backend`, `pip install uv`, `uv sync`). |
+| 3 Branch | done | Your branch is **`e5.1-real-data`** (not `m5-real-data-and-models`). Don't create a new one. |
+| 4 Libraries | done | `pyarrow` was committed with E5.1. `mapie` is added but **not committed yet**: it goes into the E5.3 commit (7f). |
+| 5 E5.1 | done, except **5h** | Code and 14 days of data are committed (`087ebd0`). Do only **[5h. Shrink the data, then push for the first time](#5h-shrink-the-data-then-push-for-the-first-time)**. |
+| 6–11 E5.2–E5.7 | to do | Follow as written. Small notes were added where something changed. |
+| 12 Final checks | to do | Follow as written. |
+
+**Pushing:** your branch has never been pushed, and it can't be until 5h is done (one data file is over GitHub's 100 MB limit). Until then, **leave out the `git push` line** in every commit step. 5h pushes everything at once, and after that plain `git push` works.
+
+**Decisions and reading:** everything that needs Joshua's OK is listed in [`docs/Carla/plans/SIGNOFF.md`](plans/SIGNOFF.md). Each epic also has a `SPEC.md` (what gets built) and a `PLAN.md` (steps and risks) under [`docs/Carla/plans/`](plans/).
+
+**Already checked for you:** the existing code that the new files call into (`sim.demand`, `Network.nodes_for` / `oriented_geometry` / `route_distance_m`, `A1Advisor` and `A1RouteOption`, `Controller.background_aircraft`, `eval.harness.make_advisor`), the helipad and pad data in the network, the route-response example the E5.6 test uses, and the docs edits in 11d. All are present and match the guide, so no extra checks are needed.
+
+---
+
 Everything happens in your web browser in a **GitHub Codespace**: a computer in the cloud that GitHub lends you, with the project already on it. Nothing gets installed on your own computer.
 
 **Time:** about 4–6 hours of hands-on steps in total, plus waiting for downloads and training (the 14-day download alone can take an hour or more; you can leave it running). You don't have to do it in one sitting: every epic ends with a commit and a push, so your work is saved on GitHub after each one.
@@ -46,6 +67,8 @@ Don't worry about spacing at the very end of a file; a formatting command tidies
 ---
 
 ## Part 1: Open a Codespace
+
+> **Revised:** already done. Skip this part if you're in your existing Codespace.
 
 1. **Give the Codespace more time before it sleeps.** Go to [github.com/settings/codespaces](https://github.com/settings/codespaces), find **Default idle timeout**, set it to **240** minutes, and click **Save**.
    - *Why:* by default a Codespace switches itself off after 30 quiet minutes. Downloads and training can run longer than that while you're not typing. The setting only applies to Codespaces created after you change it, so do this first.
@@ -100,6 +123,14 @@ uv run pytest -q -n 0 tests/test_smoke.py
 
 ## Part 3: Make your own branch
 
+> **Revised:** already done. Your branch is `e5.1-real-data`. **Don't run the `git checkout -b` command below.** Just make sure you're on it:
+>
+> ```bash
+> git checkout e5.1-real-data
+> ```
+>
+> Whether to rename it for the final pull request is decision D3 in `docs/Carla/plans/SIGNOFF.md`.
+
 A **branch** is your own copy of the project to work in. Your changes stay separate from `main` until Joshua reviews and merges them, so nothing you try can break the main project. You'll use **one branch for all of M5** and save (commit) after each epic.
 
 Command:
@@ -120,6 +151,8 @@ git config user.email "you@example.com"
 ---
 
 ## Part 4: Add the new libraries
+
+> **Revised:** already done. `pyarrow` was committed with E5.1, and `mapie` is now in `pyproject.toml` and `uv.lock` but not committed. **Don't run `uv add` again.** The two files are added to the E5.3 commit in 7f.
 
 Command:
 
@@ -144,7 +177,9 @@ The other libraries M5 needs (LightGBM, scikit-learn, Chronos-2, PyTorch) are al
 
 **Where the data comes from:** every day adsb.lol publishes every aircraft position it received worldwide, free and openly licensed (ODbL). One day is several GB. The program reads each day as a stream, keeps the flights you need, and never saves the big raw file.
 
-> **Already done E5.1?** If someone already merged E5.1 into `main` (check: run `ls src/aerolink/realdata/fetch.py`; if it prints the file name instead of "No such file"), skip to **[5f. Download and clean the real data](#5f-download-and-clean-the-real-data)** if `data/adsblol` has no `segments-*.parquet` files yet, or straight to **Part 6** if it does.
+> **Revised: E5.1 is done.** 5a–5g are complete (commit `087ebd0`: the code plus 14 days, 2026-11-09 to 11-22). **Skip straight to [5h](#5h-shrink-the-data-then-push-for-the-first-time).** 5a–5g stay below for reference.
+>
+> What the download produced: 8,215 aircraft, 36,593 segments, **4,906 flight hours**. That's about 100 times the guide's estimate, but it's real traffic: 91% of segments are A1 light aircraft (Central Florida has a lot of flight-school traffic), and unknown-category aircraft are only 0.1%. No filter change is needed. Because of that volume, the data folder is 792 MB, and one file is 108 MB. 5h fixes that.
 
 ### 5a. Create the folders
 
@@ -1792,6 +1827,134 @@ git add data/adsblol eval-results/realdata-e5.1.json
 git commit -m "data: E5.1 cleaned adsb.lol flights (ODbL) and filter counts"
 git push
 ```
+
+### 5h. Shrink the data, then push for the first time
+
+> **Revised: this is the only E5.1 step left.** Get Joshua's OK first (decision D1 in `docs/Carla/plans/SIGNOFF.md`).
+
+**Why:** GitHub refuses any file over 100 MB, and `segments-2026-11-10.parquet` is 108 MB (792 MB in total). Rounding the numbers to what the data really measures (positions to about 5 cm, altitude to 1 ft, speed and track to 0.1) and using stronger compression shrinks every file to about a third, with no new download. This was tested: the 108 MB day becomes 38 MB, and all 11 E5.1 tests still pass.
+
+1. **Shrink the files and update the pipeline** so future days are written the same way. Paste the whole box at once. It's safe to run twice.
+
+```bash
+uv run python - <<'PYEOF'
+"""Shrink the E5.1 Parquet files: round, float32, zstd. Safe to run twice."""
+from pathlib import Path
+
+import pyarrow as pa
+import pyarrow.compute as pc
+import pyarrow.parquet as pq
+
+FETCH = Path("src/aerolink/realdata/fetch.py")
+DATA = Path("data/adsblol")
+ROUND = {"lat": 6, "lon": 6, "alt_ft": 0, "gs_kt": 1, "track_deg": 1, "vrate_fpm": 0}
+
+# 1. future days are written the same way
+text = FETCH.read_text()
+edits = [
+    (
+        '+ [(c, pa.float64()) for c in COLUMNS[1:]]',
+        '+ [(c, pa.float64() if c in ("lat", "lon") else pa.float32()) for c in COLUMNS[1:]]',
+    ),
+    (
+        '    cols["t"] = [int(x) for x in cols["t"]]\n',
+        '    cols["t"] = [int(x) for x in cols["t"]]\n'
+        "    for c, digits in ROUNDING.items():  # ~5 cm on lat/lon; keeps the files small\n"
+        "        cols[c] = [round(v, digits) for v in cols[c]]\n",
+    ),
+    (
+        'pq.write_table(to_table(segments, day), out / f"segments-{day.isoformat()}.parquet")',
+        'pq.write_table(\n'
+        '        to_table(segments, day),\n'
+        '        out / f"segments-{day.isoformat()}.parquet",\n'
+        '        compression="zstd",\n'
+        '        compression_level=9,\n'
+        '    )',
+    ),
+    (
+        'ATTRIBUTION = "Contains data',
+        'ROUNDING = {"lat": 6, "lon": 6, "alt_ft": 0, "gs_kt": 1, "track_deg": 1, "vrate_fpm": 0}\n'
+        'ATTRIBUTION = "Contains data',
+    ),
+]
+for old, new in edits:
+    if new in text:
+        print(f"  already done: {new.splitlines()[0].strip()[:60]}")
+    elif text.count(old) == 1:
+        text = text.replace(old, new)
+        print(f"  updated: {new.splitlines()[0].strip()[:60]}")
+    else:
+        raise SystemExit(f"STOP: could not find this text exactly once in {FETCH}:\n{old}")
+FETCH.write_text(text)
+
+# 2. re-encode the days already downloaded (no new download)
+for path in sorted(DATA.glob("segments-*.parquet")):
+    before = path.stat().st_size / 1e6
+    table = pq.read_table(path)
+    meta = table.schema.metadata
+    for c, digits in ROUND.items():
+        typ = pa.float64() if c in ("lat", "lon") else pa.float32()
+        i = table.schema.get_field_index(c)
+        table = table.set_column(i, pa.field(c, typ), pc.round(table[c], digits).cast(typ))
+    tmp = path.with_suffix(".tmp")
+    pq.write_table(table.replace_schema_metadata(meta), tmp, compression="zstd", compression_level=9)
+    tmp.replace(path)
+    print(f"  {path.name}: {before:.0f} MB -> {path.stat().st_size / 1e6:.0f} MB")
+print("Done.")
+PYEOF
+```
+
+   You'll see 4 `updated:` lines, then one line per day (for example `segments-2026-11-10.parquet: 108 MB -> 38 MB`), then **`Done.`** It takes a few minutes. If you see `STOP: ...`, send the message to Joshua.
+
+2. **Check.** Command:
+
+```bash
+uv run pytest -q tests/test_realdata.py
+uv run ruff format --check && uv run ruff check
+ls -lh data/adsblol && du -sh data/adsblol
+```
+
+   Expect **`11 passed`**, **`All checks passed!`**, and **no file over 50 MB**.
+
+3. **Rewrite the E5.1 history so the 108 MB file never reaches GitHub.** The old big files are still inside commit `087ebd0`, and GitHub checks every commit you push, not just the latest. This turns E5.1 and the merge from `main` into one clean commit on top of `main`. Paste the whole box at once:
+
+```bash
+cd ..
+git fetch origin
+git branch e5.1-backup                     # safety copy of the old history; never push it
+git add backend/data/adsblol backend/src/aerolink/realdata/fetch.py
+git reset --soft origin/main               # keeps every file exactly as it is now
+git commit -F - <<'EOF'
+feat: E5.1 real-data pipeline (adsb.lol)
+
+* feat: stream adsb.lol daily releases from GitHub without saving raw data
+* feat: parse readsb trace files; filter to Central Florida helicopters and light aircraft
+* feat: split flights into 1 Hz segments; write daily Parquet (zstd, rounded) and filter reports
+* feat: replay real flights as simulator background traffic
+* data: cleaned flights in backend/data/adsblol (ODbL, attributed), 14 days
+* docs: ARCHITECTURE and PLAN updated for E5.1
+EOF
+git status --short
+cd backend
+```
+
+   *What it does:* `reset --soft` moves the branch back to `main` without touching any file, and the commit then saves everything as one snapshot. `pyproject.toml`, `uv.lock` (mapie), `src/aerolink/realdata/__init__.py` and this guide stay uncommitted: `git status --short` shows them as ` M`, and the plan files as `??`. That's expected. They belong to later commits.
+
+4. **Make sure nothing over 50 MB is about to be pushed.** Command:
+
+```bash
+git rev-list --objects origin/main..HEAD | git cat-file --batch-check='%(objectsize) %(rest)' | sort -n | tail -3
+```
+
+   The biggest number in the first column should be under 50,000,000 (50 MB).
+
+5. **Push for the first time.** Command:
+
+```bash
+git push -u origin HEAD
+```
+
+   From now on, the plain `git push` lines in this guide work. When the push has succeeded, you can delete the safety copy: `git branch -D e5.1-backup`.
 
 **E5.1 done.**
 
@@ -3782,6 +3945,8 @@ uv run python -m aerolink.forecast.train_gbm --with-chronos
 
 *What it does:* simulates all 7 scenarios with 8 seeds, builds samples from them and from your real training days, trains 39 small models, calibrates them, saves everything to `backend/models/aerolink-gbm/`, then scores all three forecasters on the held-out data. Expect **15–40 minutes** on a 4-core Codespace (most of it is Chronos-2 scoring; leave out `--with-chronos` for a quick rehearsal).
 
+> **Revised:** your real data is much bigger than the guide assumed (10 training days of about 1.6 million flight-seconds each, roughly 500,000 real training samples). Expect this step to take **longer, maybe 1 hour or more**, and to use several GB of memory. If it stops with `Killed` or `MemoryError`, push your work and switch to an **8-core** Codespace (see Troubleshooting). If it's still too slow there, stop and ask Joshua about capping the real training samples (decision D4 in `docs/Carla/plans/SIGNOFF.md`). Don't change the code on your own.
+
 What it prints at the end (example):
 
 ```text
@@ -3823,7 +3988,7 @@ uv run python -m aerolink.realdata.benchmark --forecasters cv chronos aerolink-g
 Command:
 
 ```bash
-git add src/aerolink/forecast/simdata.py src/aerolink/forecast/gbm.py src/aerolink/forecast/train_gbm.py tests/test_e53_gbm.py models/aerolink-gbm eval-results/aerolink-gbm-e5.3.json eval-results/realdata-e5.2.json
+git add src/aerolink/forecast/simdata.py src/aerolink/forecast/gbm.py src/aerolink/forecast/train_gbm.py tests/test_e53_gbm.py models/aerolink-gbm eval-results/aerolink-gbm-e5.3.json eval-results/realdata-e5.2.json pyproject.toml uv.lock
 git commit -F - <<'EOF'
 feat: E5.3 aerolink-gbm forecaster (LightGBM + MAPIE)
 
@@ -3831,6 +3996,7 @@ feat: E5.3 aerolink-gbm forecaster (LightGBM + MAPIE)
 * feat: residual-over-cv quantile models, conformalized to 80% p10-p90 coverage
 * feat: train_gbm CLI with held-out sim and real evaluation vs cv and chronos
 * data: model files with manifest (seeds, data, library versions, sha256)
+* chore: add mapie
 EOF
 git push
 ```
@@ -6163,6 +6329,14 @@ LLM pass rate: 46/50 (92%); 3 rejected for wrong numbers, 1 API errors; all show
 
 (Example numbers.) If you see many API errors, check the key and model ID, and that the key has credit.
 
+> **Revised: before committing, make sure the key didn't end up in the results file** (an error message can sometimes contain it). Command:
+>
+> ```bash
+> grep -c "$LLM_API_KEY" eval-results/summary-e5.6.json
+> ```
+>
+> It must print **`0`**. If it prints anything else, don't commit. Tell Joshua, because the key needs replacing.
+
 ### 10e. Commit
 
 Command:
@@ -6894,6 +7068,8 @@ print("Docs updated.")
 PYEOF
 ```
 
+> **Revised:** E5.1 already made three of these doc edits, so those lines will say `already done:`. That's expected and was checked against the current docs, and every other edit still finds its text.
+
 You should see a list of `updated: ...` lines ending in **`Docs updated.`** If you see `STOP: could not find this text...`, someone has edited that part of the docs since this guide was written: don't edit by hand, send the message to Joshua. (Running it twice is safe: the second time says `already done`.)
 
 ### 11e. Run the ablations
@@ -6963,6 +7139,8 @@ git status
 
 It should say **`nothing to commit, working tree clean`**. If a file shows as modified or untracked, check it's one of yours and add it to a commit (ask Joshua if unsure). Then go back: `cd backend`.
 
+> **Revised:** the files under `docs/Carla/plans/` may show as untracked (`SPEC.md`, `SIGNOFF.md`), along with your edits to this guide. Commit them or not as agreed with Joshua. The `PLAN.md` files never show up, because they're ignored locally on purpose. Don't force-add them.
+
 ### 12c. Make sure the results are all there
 
 Command:
@@ -6975,7 +7153,7 @@ You should see `realdata-e5.1.json`, `realdata-e5.2.json`, `aerolink-gbm-e5.3.js
 
 ### 12d. Open the pull request
 
-Go to the AeroLink repository on github.com. A yellow banner says **m5-real-data-and-models had recent pushes**: click **Compare & pull request**. Title: **M5: Real data and trained models**. In the description, paste the B1-vs-A5 line from `eval-results/m5-ablations.md` and anything you wrote down for Joshua (surprising numbers, warnings). Click **Create pull request**. GitHub runs all the checks automatically; a green tick means they passed.
+Go to the AeroLink repository on github.com. A yellow banner says **e5.1-real-data had recent pushes** (or the name agreed in decision D3): click **Compare & pull request**. Title: **M5: Real data and trained models**. In the description, paste the B1-vs-A5 line from `eval-results/m5-ablations.md` and anything you wrote down for Joshua (surprising numbers, warnings). Also include the limits from `docs/Carla/plans/SIGNOFF.md` (D15–D16) and anything that differs from this guide (for example, a Chronos fallback or a sample cap). Click **Create pull request**. GitHub runs all the checks automatically; a green tick means they passed.
 
 **That's all of M5.**
 
@@ -7011,7 +7189,7 @@ All seeds are fixed in the commands' defaults, so the same data gives the same r
 | `no release published (yet)` | That day isn't online yet, so it's skipped. Fine for one or two days. |
 | `HTTP Error 403` or `rate limit` (download) | GitHub is briefly limiting downloads. Wait 15 minutes and run the same command again; finished days are skipped. |
 | Chronos-2 download or `OSError` from Hugging Face | Run the command again. If it keeps failing, use `--no-chronos` / leave `chronos` out, commit, and tell Joshua. |
-| `Killed` or `MemoryError` | The machine is too small. Push your work first (`git push`), then create a new Codespace with **8-core**, check out your branch (`git checkout m5-real-data-and-models`), and continue. |
+| `Killed` or `MemoryError` | The machine is too small. Push your work first (`git push`), then create a new Codespace with **8-core**, check out your branch (`git checkout e5.1-real-data`), and continue. |
 | `LLM_MODEL and LLM_API_KEY are not set` | Run the two `export` lines in 10c in this terminal (a new terminal forgets them). |
 | `STOP: could not find this text...` (docs step) | The docs changed since this guide was written. Don't edit by hand; send the message to Joshua. |
 | A test fails, or `git push` is refused | Copy the last 20 lines from the terminal and send them to Joshua. |
