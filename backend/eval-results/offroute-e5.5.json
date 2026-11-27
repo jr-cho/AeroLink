@@ -23,12 +23,12 @@
     220
   ],
   "forecaster": "aerolink-gbm",
-  "flights": 40,
-  "injected_deviations": 22,
+  "flights": 59,
+  "injected_deviations": 32,
   "deviation_kinds": {
-    "turn": 5,
-    "drift": 9,
-    "slow": 8
+    "turn": 16,
+    "drift": 10,
+    "slow": 6
   },
   "detection_window_s": 300,
   "models": {
@@ -53,7 +53,7 @@
     "tolerance": {
       "seed": 42,
       "quantile": 0.99,
-      "samples": 30559,
+      "samples": 111857,
       "sim_train_seeds": [
         1,
         2,
@@ -63,12 +63,12 @@
   },
   "results": {
     "fixed_bounds": {
-      "precision": 0.933,
-      "recall": 0.636,
-      "detections": 14,
-      "false_alarms": 1,
-      "latency_median_s": 32.0,
-      "latency_p90_s": 47.900000000000006,
+      "precision": 1.0,
+      "recall": 0.812,
+      "detections": 26,
+      "false_alarms": 0,
+      "latency_median_s": 11.0,
+      "latency_p90_s": 51.5,
       "recall_by_kind": {
         "drift": 1.0,
         "slow": 0.0,
@@ -76,11 +76,11 @@
       }
     },
     "tolerance": {
-      "precision": 0.933,
-      "recall": 0.636,
-      "detections": 14,
-      "false_alarms": 1,
-      "latency_median_s": 28.0,
+      "precision": 1.0,
+      "recall": 0.812,
+      "detections": 26,
+      "false_alarms": 0,
+      "latency_median_s": 27.0,
       "latency_p90_s": 32.0,
       "recall_by_kind": {
         "drift": 1.0,
@@ -89,54 +89,54 @@
       }
     },
     "schedule": {
-      "precision": 0.667,
-      "recall": 0.273,
-      "detections": 6,
-      "false_alarms": 3,
-      "latency_median_s": 132.0,
-      "latency_p90_s": 207.5,
+      "precision": 1.0,
+      "recall": 0.125,
+      "detections": 4,
+      "false_alarms": 0,
+      "latency_median_s": 204.5,
+      "latency_p90_s": 241.7,
       "recall_by_kind": {
         "drift": 0.0,
-        "slow": 0.5,
-        "turn": 0.4
+        "slow": 0.333,
+        "turn": 0.125
       }
     },
     "band": {
-      "precision": 0.417,
-      "recall": 0.227,
-      "detections": 5,
-      "false_alarms": 7,
+      "precision": 0.75,
+      "recall": 0.281,
+      "detections": 9,
+      "false_alarms": 3,
       "latency_median_s": 29.0,
-      "latency_p90_s": 206.4,
+      "latency_p90_s": 51.600000000000016,
       "recall_by_kind": {
-        "drift": 0.111,
-        "slow": 0.125,
-        "turn": 0.6
+        "drift": 0.1,
+        "slow": 0.333,
+        "turn": 0.375
       }
     },
     "anomaly": {
-      "precision": 0.0,
-      "recall": 0.0,
-      "detections": 0,
-      "false_alarms": 0,
-      "latency_median_s": null,
-      "latency_p90_s": null,
+      "precision": 0.5,
+      "recall": 0.031,
+      "detections": 1,
+      "false_alarms": 1,
+      "latency_median_s": 8.0,
+      "latency_p90_s": 8.0,
       "recall_by_kind": {
         "drift": 0.0,
         "slow": 0.0,
-        "turn": 0.0
+        "turn": 0.062
       }
     },
     "ai": {
-      "precision": 0.818,
-      "recall": 0.818,
-      "detections": 18,
-      "false_alarms": 4,
-      "latency_median_s": 29.0,
-      "latency_p90_s": 82.70000000000002,
+      "precision": 1.0,
+      "recall": 0.875,
+      "detections": 28,
+      "false_alarms": 0,
+      "latency_median_s": 27.5,
+      "latency_p90_s": 34.3,
       "recall_by_kind": {
         "drift": 1.0,
-        "slow": 0.5,
+        "slow": 0.333,
         "turn": 1.0
       }
     }

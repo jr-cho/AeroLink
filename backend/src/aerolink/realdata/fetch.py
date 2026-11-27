@@ -27,6 +27,7 @@ import pyarrow.parquet as pq
 
 from aerolink.realdata.config import FilterConfig
 from aerolink.realdata.parse import decode, parse_trace
+from aerolink.realdata.pseudonym import KeyedPseudonyms
 from aerolink.realdata.segments import COLUMNS, Segment, extract_segments
 from aerolink.realdata.source import find_release, iter_trace_files, open_parts
 
@@ -62,25 +63,26 @@ def process_stream(
 
 
 def to_table(segments: list[Segment], day: date) -> pa.Table:
+    # L-FIX C-09: no registration; icao, callsign and the segment id's icao part are pseudonyms (fresh key per run)
+    keys = KeyedPseudonyms()
     cols: dict[str, list] = {
-        k: [] for k in ["day", "segment_id", "icao", "registration", "type_code", "category", "callsign", *COLUMNS]
+        k: [] for k in ["day", "segment_id", "icao", "type_code", "category", "callsign", *COLUMNS]
     }
     for s in segments:
         n = len(s.data["t"])
         for key, value in (
             ("day", day.isoformat()),
-            ("segment_id", s.segment_id),
-            ("icao", s.icao),
-            ("registration", s.registration),
+            ("segment_id", keys.segment_id(s.segment_id, s.icao)),
+            ("icao", keys.icao(s.icao)),
             ("type_code", s.type_code),
             ("category", s.category),
-            ("callsign", s.callsign),
+            ("callsign", keys.callsign(s.callsign)),
         ):
             cols[key].extend([value] * n)
         for c in COLUMNS:
             cols[c].extend(s.data[c].tolist())
     schema = pa.schema(
-        [(k, pa.string()) for k in ["day", "segment_id", "icao", "registration", "type_code", "category", "callsign"]]
+        [(k, pa.string()) for k in ["day", "segment_id", "icao", "type_code", "category", "callsign"]]
         + [("t", pa.int64())]
         + [(c, pa.float64() if c in ("lat", "lon") else pa.float32()) for c in COLUMNS[1:]]
     )

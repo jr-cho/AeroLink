@@ -14,9 +14,12 @@
     102
   ],
   "scenarios": [
+    "fdot_high_peak",
+    "i4_corridor_rush",
     "i4_peak",
     "medical_dispatch",
     "nominal_day",
+    "orlando_event_egress",
     "rogue_aircraft",
     "sebring_race_weekend",
     "slow_and_diverted",
@@ -45,18 +48,21 @@
   "coverage_target": 0.8,
   "samples": {
     "position_fit_and_calibration": {
-      "30": 463836,
-      "60": 433783,
-      "120": 379915,
-      "300": 268744
+      "30": 497783,
+      "60": 466778,
+      "120": 411016,
+      "300": 294659
     },
-    "eta": 11490
+    "eta": 39958,
+    "eta_departure": 1034,
+    "eta_departure_calibration": 207
   },
+  "run_env": "HF_HUB_OFFLINE=1 OMP_NUM_THREADS=1 (torch and LightGBM clash over libomp on macOS)",
   "libraries": {
     "lightgbm": "4.7.0",
     "mapie": "1.6.0",
     "scikit-learn": "1.9.1",
     "numpy": "2.5.5"
   },
-  "sha256": "f6cfd0cc348dd7b6c212b6ca188fcd5e28b2d0c466035dd2f56e1c720a1c15c5"
+  "sha256": "bf98c82546b1ab2f740574fa57e96f05d7cd66d3476b06f261bd99143a8abb84"
 }

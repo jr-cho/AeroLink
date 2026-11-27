@@ -1,537 +1,543 @@
 {
-  "model": "paste-the-model-id-here",
+  "model": "qwen3-14b-turbo",
   "cases": 50,
-  "llm_pass_rate": 0.0,
-  "rejected_number_mismatch": 0,
+  "llm_pass_rate": 0.94,
+  "rejected_number_mismatch": 3,
   "rejected_other": 0,
-  "api_errors": 50,
+  "api_errors": 0,
   "templates_pass_number_check": true,
   "mismatched_numbers_shown_to_users": 0,
   "results": [
     {
       "case": 0,
-      "source": "template",
-      "summary": "Fastest route: about 2 min to Parramore (Downtown Orlando), low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 2 minutes to fly with no expected wait and low traffic; you'll arrive at Parramore (Downtown Orlando) at 13:43.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 2 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 13:43 (likely 13:43-13:44); note: none"
+        "option 1 (recommended, fastest): 2 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 13:43 (likely 13:43-13:44); note: none"
       ]
     },
     {
       "case": 1,
-      "source": "template",
-      "summary": "Fastest route: about 32 min to AdventHealth Kissimmee, low traffic. The next option takes 8 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is the fastest route, taking 32 minutes flying with no expected wait and low traffic, arriving at AdventHealth Kissimmee at 14:17. Options 2 and 3 take longer, adding 8 and 9 minutes respectively to the flight time.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 32 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive AdventHealth Kissimmee at 14:17 (likely 14:14-14:19); note: none",
+        "option 1 (recommended, fastest): 32 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive AdventHealth Kissimmee at 14:17 (likely 14:14-14:19); note: none",
         "option 2 (alternative): 40 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive AdventHealth Kissimmee at 14:26 (likely 14:22-14:29); note: none",
         "option 3 (alternative): 41 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive AdventHealth Kissimmee at 14:26 (likely 14:23-14:29); note: none"
       ]
     },
     {
       "case": 2,
-      "source": "template",
-      "summary": "Fastest route: about 43 min to Sebring Regional Airport, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 43 minutes with no expected wait and low traffic, arriving at Sebring Regional Airport between 14:01 and 14:08.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 43 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Sebring Regional Airport at 14:04 (likely 14:01-14:08); note: none"
+        "option 1 (recommended, fastest): 43 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Sebring Regional Airport at 14:04 (likely 14:01-14:08); note: none"
       ]
     },
     {
       "case": 3,
-      "source": "template",
-      "summary": "Fastest route: about 28 min to Lakeland Linder Intl Airport, low traffic. The next option takes 10 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 28 minutes flying time and arriving at Lakeland Linder Intl Airport at 14:17. Options 2 and 3 take longer, with arrival times of 14:27 and 14:31 respectively.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 28 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Lakeland Linder Intl Airport at 14:17 (likely 14:14-14:19); note: none",
+        "option 1 (recommended, fastest): 28 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Lakeland Linder Intl Airport at 14:17 (likely 14:14-14:19); note: none",
         "option 2 (alternative): 38 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Lakeland Linder Intl Airport at 14:27 (likely 14:24-14:30); note: none",
         "option 3 (alternative): 42 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Lakeland Linder Intl Airport at 14:31 (likely 14:27-14:34); note: none"
       ]
     },
     {
       "case": 4,
-      "source": "template",
-      "summary": "Fastest route: about 39 min to Orlando Executive Airport, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as the fastest route, taking 39 minutes with no expected wait and low traffic, arriving at Orlando Executive Airport between 13:39 and 13:45.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 39 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 13:42 (likely 13:39-13:45); note: none"
+        "option 1 (recommended, fastest): 39 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 13:42 (likely 13:39-13:45); note: none"
       ]
     },
     {
       "case": 5,
-      "source": "template",
-      "summary": "Fastest route: about 39 min to Water Street (Downtown Tampa), low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as the fastest route, taking 39 minutes with no expected wait and low traffic, arriving at Water Street (Downtown Tampa) around 14:24.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 39 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Water Street (Downtown Tampa) at 14:24 (likely 14:21-14:27); note: none"
+        "option 1 (recommended, fastest): 39 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Water Street (Downtown Tampa) at 14:24 (likely 14:21-14:27); note: none"
       ]
     },
     {
       "case": 6,
-      "source": "template",
-      "summary": "Fastest route: about 35 min to Sebring Regional Airport, low traffic. The next option takes 4 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 35 minutes flying and arriving at Sebring Regional Airport at 14:21, while option 2 takes 39 minutes and arrives at 14:25. Both routes have low traffic and no expected wait times.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 35 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Sebring Regional Airport at 14:21 (likely 14:19-14:24); note: none",
+        "option 1 (recommended, fastest): 35 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Sebring Regional Airport at 14:21 (likely 14:19-14:24); note: none",
         "option 2 (alternative): 39 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Sebring Regional Airport at 14:25 (likely 14:22-14:28); note: none"
       ]
     },
     {
       "case": 7,
-      "source": "template",
-      "summary": "Fastest route: about 30 min to Tampa General Hospital, low traffic. The next option takes 9 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is the fastest route, taking 30 minutes flying with no expected wait time and low traffic, arriving at Tampa General Hospital at 13:32. Options 2 and 3 take 39 minutes flying and arrive later, with no expected wait time or traffic issues.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 30 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Tampa General Hospital at 13:32 (likely 13:30-13:34); note: none",
+        "option 1 (recommended, fastest): 30 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Tampa General Hospital at 13:32 (likely 13:30-13:34); note: none",
         "option 2 (alternative): 39 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Tampa General Hospital at 13:41 (likely 13:38-13:44); note: none",
         "option 3 (alternative): 39 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Tampa General Hospital at 13:41 (likely 13:38-13:45); note: none"
       ]
     },
     {
       "case": 8,
-      "source": "template",
-      "summary": "Fastest route: about 22 min to Poinciana Medical Center, low traffic. The next option takes 2 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 22 minutes flying and arriving at Poinciana Medical Center at 14:19. Both routes have low traffic and no bunching risk, but Option 1 arrives earlier.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 22 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Poinciana Medical Center at 14:19 (likely 14:18-14:21); note: none",
+        "option 1 (recommended, fastest): 22 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Poinciana Medical Center at 14:19 (likely 14:18-14:21); note: none",
         "option 2 (alternative): 24 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Poinciana Medical Center at 14:22 (likely 14:20-14:24); note: none"
       ]
     },
     {
       "case": 9,
       "source": "template",
-      "summary": "Fastest route: about 19 min to Parramore (Downtown Orlando), low traffic. The next option takes 11 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
-      "bad_numbers": [],
+      "summary": "Recommended route: about 19 min to Parramore (Downtown Orlando), low traffic. The next option takes 11 min longer.",
+      "rejected": "Option 1 is recommended as it is the fastest route, taking 19 minutes flying and arriving at Parramore (Downtown Orlando) at 13:47. Option 2 takes 30 minutes flying and arrives 10 minutes later.",
+      "bad_numbers": [
+        "10"
+      ],
       "facts": [
-        "option 1 (fastest): 19 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 13:47 (likely 13:46-13:49); note: none",
+        "option 1 (recommended, fastest): 19 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 13:47 (likely 13:46-13:49); note: none",
         "option 2 (alternative): 30 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 13:57 (likely 13:55-14:00); note: none"
       ]
     },
     {
       "case": 10,
-      "source": "template",
-      "summary": "Fastest route: about 33 min to Orlando Health Arnold Palmer Hospital for Children, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as the fastest route, taking 33 minutes with no expected wait and low traffic, arriving at Orlando Health Arnold Palmer Hospital for Children around 13:46.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 33 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Health Arnold Palmer Hospital for Children at 13:46 (likely 13:43-13:49); note: none"
+        "option 1 (recommended, fastest): 33 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Health Arnold Palmer Hospital for Children at 13:46 (likely 13:43-13:49); note: none"
       ]
     },
     {
       "case": 11,
-      "source": "template",
-      "summary": "Fastest route: about 21 min to Orlando Executive Airport, low traffic. The next option takes 10 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 21 minutes flying with an expected arrival time of 14:10. Option 2 takes 31 minutes flying and arrives 10 minutes later.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 21 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 14:10 (likely 14:09-14:12); note: none",
+        "option 1 (recommended, fastest): 21 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 14:10 (likely 14:09-14:12); note: none",
         "option 2 (alternative): 31 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 14:20 (likely 14:18-14:23); note: none"
       ]
     },
     {
       "case": 12,
-      "source": "template",
-      "summary": "Fastest route: about 42 min to Water Street (Downtown Tampa), low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as the fastest route, taking 42 minutes with no expected wait and low traffic, arriving at Water Street (Downtown Tampa) around 14:30.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 42 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Water Street (Downtown Tampa) at 14:30 (likely 14:27-14:33); note: none"
+        "option 1 (recommended, fastest): 42 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Water Street (Downtown Tampa) at 14:30 (likely 14:27-14:33); note: none"
       ]
     },
     {
       "case": 13,
-      "source": "template",
-      "summary": "Fastest route: about 11 min to Lakeland Linder Intl Airport, low traffic. The next option takes 23 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 11 minutes flying with no expected wait and low traffic, arriving at Lakeland Linder Intl Airport at 13:52. Option 2 takes significantly longer, with a 34-minute flight and arrival at 14:15.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 11 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Lakeland Linder Intl Airport at 13:52 (likely 13:51-13:53); note: none",
+        "option 1 (recommended, fastest): 11 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Lakeland Linder Intl Airport at 13:52 (likely 13:51-13:53); note: none",
         "option 2 (alternative): 34 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Lakeland Linder Intl Airport at 14:15 (likely 14:12-14:18); note: none"
       ]
     },
     {
       "case": 14,
-      "source": "template",
-      "summary": "Fastest route: about 19 min to Bartow Memorial Hospital, low traffic. The next option takes 4 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 19 minutes flying and arriving at Bartow Memorial Hospital at 14:06. Option 2 takes 23 minutes flying and arrives at 14:10.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 19 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Bartow Memorial Hospital at 14:06 (likely 14:05-14:08); note: none",
+        "option 1 (recommended, fastest): 19 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Bartow Memorial Hospital at 14:06 (likely 14:05-14:08); note: none",
         "option 2 (alternative): 23 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Bartow Memorial Hospital at 14:10 (likely 14:08-14:12); note: none"
       ]
     },
     {
       "case": 15,
-      "source": "template",
-      "summary": "Fastest route: about 43 min to Orlando Executive Airport, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as the fastest route, taking 43 minutes with no expected wait and low traffic, arriving at Orlando Executive Airport between 14:25 and 14:32.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 43 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 14:29 (likely 14:25-14:32); note: none"
+        "option 1 (recommended, fastest): 43 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 14:29 (likely 14:25-14:32); note: none"
       ]
     },
     {
       "case": 16,
-      "source": "template",
-      "summary": "Fastest route: about 2 min to Orlando Executive Airport, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 2 minutes to fly with no expected wait and low traffic; you'll arrive at Orlando Executive Airport at 13:08.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 2 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 13:08 (likely 13:08-13:09); note: none"
+        "option 1 (recommended, fastest): 2 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 13:08 (likely 13:08-13:09); note: none"
       ]
     },
     {
       "case": 17,
-      "source": "template",
-      "summary": "Fastest route: about 41 min to Sebring Regional Airport, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 41 minutes with no expected wait and low traffic, arriving at Sebring Regional Airport between 14:11 and 14:18.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 41 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Sebring Regional Airport at 14:15 (likely 14:11-14:18); note: none"
+        "option 1 (recommended, fastest): 41 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Sebring Regional Airport at 14:15 (likely 14:11-14:18); note: none"
       ]
     },
     {
       "case": 18,
-      "source": "template",
-      "summary": "Fastest route: about 2 min to Parramore (Downtown Orlando), low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 2 minutes to fly with no expected wait and low traffic, arriving at Parramore (Downtown Orlando) around 13:35.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 2 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 13:35 (likely 13:34-13:35); note: none"
+        "option 1 (recommended, fastest): 2 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 13:35 (likely 13:34-13:35); note: none"
       ]
     },
     {
       "case": 19,
-      "source": "template",
-      "summary": "Fastest route: about 2 min to Orlando Executive Airport, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 2 minutes to fly with no expected wait and low traffic; it arrives at Orlando Executive Airport at 13:28.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 2 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 13:28 (likely 13:27-13:28); note: none"
+        "option 1 (recommended, fastest): 2 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 13:28 (likely 13:27-13:28); note: none"
       ]
     },
     {
       "case": 20,
-      "source": "template",
-      "summary": "Fastest route: about 17 min to AdventHealth Celebration, low traffic. The next option takes 13 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 17 minutes to fly with no expected wait time and low traffic, arriving at AdventHealth Celebration at 13:30. Option 2 takes 30 minutes to fly and arrives 13 minutes later.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 17 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive AdventHealth Celebration at 13:30 (likely 13:29-13:32); note: none",
+        "option 1 (recommended, fastest): 17 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive AdventHealth Celebration at 13:30 (likely 13:29-13:32); note: none",
         "option 2 (alternative): 30 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive AdventHealth Celebration at 13:43 (likely 13:41-13:46); note: none"
       ]
     },
     {
       "case": 21,
-      "source": "template",
-      "summary": "Fastest route: about 4 min to AdventHealth Tampa, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 4 minutes to fly with no expected wait and low traffic; it arrives at AdventHealth Tampa likely between 13:20 and 13:21.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 4 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive AdventHealth Tampa at 13:21 (likely 13:20-13:21); note: none"
+        "option 1 (recommended, fastest): 4 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive AdventHealth Tampa at 13:21 (likely 13:20-13:21); note: none"
       ]
     },
     {
       "case": 22,
-      "source": "template",
-      "summary": "Fastest route: about 41 min to Parramore (Downtown Orlando), low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as the fastest route, taking 41 minutes with no expected wait and low traffic, arriving at Parramore (Downtown Orlando) between 14:17 and 14:24.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 41 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 14:20 (likely 14:17-14:24); note: none"
+        "option 1 (recommended, fastest): 41 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 14:20 (likely 14:17-14:24); note: none"
       ]
     },
     {
       "case": 23,
-      "source": "template",
-      "summary": "Fastest route: about 2 min to Orlando Executive Airport, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 2 minutes to fly with no expected wait and low traffic; you'll arrive at Orlando Executive Airport around 13:11.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 2 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 13:11 (likely 13:11-13:12); note: none"
+        "option 1 (recommended, fastest): 2 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 13:11 (likely 13:11-13:12); note: none"
       ]
     },
     {
       "case": 24,
-      "source": "template",
-      "summary": "Fastest route: about 1 min to Orlando Health Orlando Regional Medical Center, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 1 minute to fly with no expected wait and low traffic; it arrives at Orlando Health Orlando Regional Medical Center at 13:28.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 1 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Health Orlando Regional Medical Center at 13:28 (likely 13:28-13:29); note: none"
+        "option 1 (recommended, fastest): 1 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Health Orlando Regional Medical Center at 13:28 (likely 13:28-13:29); note: none"
       ]
     },
     {
       "case": 25,
-      "source": "template",
-      "summary": "Fastest route: about 6 min to AdventHealth Altamonte Springs, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 6 minutes with no expected wait and low traffic, arriving at AdventHealth Altamonte Springs at 13:15.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 6 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive AdventHealth Altamonte Springs at 13:15 (likely 13:14-13:15); note: none"
+        "option 1 (recommended, fastest): 6 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive AdventHealth Altamonte Springs at 13:15 (likely 13:14-13:15); note: none"
       ]
     },
     {
       "case": 26,
       "source": "template",
-      "summary": "Fastest route: about 21 min to Orlando Executive Airport, low traffic. The next option takes 10 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
-      "bad_numbers": [],
+      "summary": "Recommended route: about 21 min to Orlando Executive Airport, low traffic. The next option takes 10 min longer.",
+      "rejected": "Option 1 is recommended as it is the fastest route, taking 21 minutes flying with no expected wait and low traffic, arriving at Orlando Executive Airport at 13:38. Option 2 takes 31 minutes flying and arrives 11 minutes later.",
+      "bad_numbers": [
+        "11"
+      ],
       "facts": [
-        "option 1 (fastest): 21 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 13:38 (likely 13:37-13:40); note: none",
+        "option 1 (recommended, fastest): 21 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 13:38 (likely 13:37-13:40); note: none",
         "option 2 (alternative): 31 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 13:49 (likely 13:46-13:51); note: none"
       ]
     },
     {
       "case": 27,
-      "source": "template",
-      "summary": "Fastest route: about 38 min to Water Street (Downtown Tampa), low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 38 minutes with no expected wait and low traffic, arriving at Water Street (Downtown Tampa) around 13:42.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 38 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Water Street (Downtown Tampa) at 13:42 (likely 13:39-13:45); note: none"
+        "option 1 (recommended, fastest): 38 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Water Street (Downtown Tampa) at 13:42 (likely 13:39-13:45); note: none"
       ]
     },
     {
       "case": 28,
-      "source": "template",
-      "summary": "Fastest route: about 20 min to AdventHealth Orlando, low traffic. The next option takes 3 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 20 minutes flying with an expected arrival time of 14:02; both options have low traffic and no bunching risk.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 20 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive AdventHealth Orlando at 14:02 (likely 14:00-14:03); note: none",
+        "option 1 (recommended, fastest): 20 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive AdventHealth Orlando at 14:02 (likely 14:00-14:03); note: none",
         "option 2 (alternative): 23 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive AdventHealth Orlando at 14:04 (likely 14:02-14:06); note: none"
       ]
     },
     {
       "case": 29,
-      "source": "template",
-      "summary": "Fastest route: about 39 min to Hillsborough County Fire Rescue / EMS, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as the fastest route, taking 39 minutes with no expected wait and low traffic, arriving at Hillsborough County Fire Rescue / EMS between 14:22 and 14:28.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 39 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Hillsborough County Fire Rescue / EMS at 14:25 (likely 14:22-14:28); note: none"
+        "option 1 (recommended, fastest): 39 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Hillsborough County Fire Rescue / EMS at 14:25 (likely 14:22-14:28); note: none"
       ]
     },
     {
       "case": 30,
-      "source": "template",
-      "summary": "Fastest route: about 2 min to Orlando Executive Airport, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 2 minutes to fly with no expected wait and low traffic; it arrives at Orlando Executive Airport at 13:07 with no noted issues.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 2 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 13:07 (likely 13:07-13:08); note: none"
+        "option 1 (recommended, fastest): 2 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 13:07 (likely 13:07-13:08); note: none"
       ]
     },
     {
       "case": 31,
-      "source": "template",
-      "summary": "Fastest route: about 42 min to Water Street (Downtown Tampa), low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 42 minutes with no expected wait and low traffic, arriving at Water Street (Downtown Tampa) around 13:54.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 42 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Water Street (Downtown Tampa) at 13:54 (likely 13:51-13:57); note: none"
+        "option 1 (recommended, fastest): 42 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Water Street (Downtown Tampa) at 13:54 (likely 13:51-13:57); note: none"
       ]
     },
     {
       "case": 32,
-      "source": "template",
-      "summary": "Fastest route: about 26 min to Parramore (Downtown Orlando), low traffic. The next option takes 10 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is the fastest route, taking 26 minutes flying with no expected wait time and low traffic, arriving at Parramore (Downtown Orlando) around 14:17. Option 2 and 3 take longer, adding 10 and 14 minutes respectively to the flight time.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 26 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 14:17 (likely 14:15-14:19); note: none",
+        "option 1 (recommended, fastest): 26 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 14:17 (likely 14:15-14:19); note: none",
         "option 2 (alternative): 36 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 14:27 (likely 14:24-14:30); note: none",
         "option 3 (alternative): 40 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 14:31 (likely 14:28-14:35); note: none"
       ]
     },
     {
       "case": 33,
-      "source": "template",
-      "summary": "Fastest route: about 43 min to Orlando Executive Airport, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 43 minutes with no expected wait and low traffic, arriving at Orlando Executive Airport between 14:05 and 14:11.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 43 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 14:08 (likely 14:05-14:11); note: none"
+        "option 1 (recommended, fastest): 43 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 14:08 (likely 14:05-14:11); note: none"
       ]
     },
     {
       "case": 34,
-      "source": "template",
-      "summary": "Fastest route: about 41 min to Sebring Regional Airport, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as the fastest route, taking 41 minutes with no expected wait and low traffic, arriving at Sebring Regional Airport between 13:42 and 13:49.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 41 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Sebring Regional Airport at 13:46 (likely 13:42-13:49); note: none"
+        "option 1 (recommended, fastest): 41 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Sebring Regional Airport at 13:46 (likely 13:42-13:49); note: none"
       ]
     },
     {
       "case": 35,
-      "source": "template",
-      "summary": "Fastest route: about 26 min to Parramore (Downtown Orlando), low traffic. The next option takes 10 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is the fastest route, taking 26 minutes flying with no expected wait and low traffic, arriving at Parramore (Downtown Orlando) at 13:55. Options 2 and 3 take longer, adding 10 and 14 minutes respectively to the flight time.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 26 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 13:55 (likely 13:53-13:58); note: none",
+        "option 1 (recommended, fastest): 26 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 13:55 (likely 13:53-13:58); note: none",
         "option 2 (alternative): 36 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 14:06 (likely 14:03-14:09); note: none",
         "option 3 (alternative): 40 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 14:10 (likely 14:06-14:13); note: none"
       ]
     },
     {
       "case": 36,
-      "source": "template",
-      "summary": "Fastest route: about 41 min to Sebring Regional Airport, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 41 minutes with no expected wait and low traffic, arriving at Sebring Regional Airport between 14:13 and 14:19.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 41 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Sebring Regional Airport at 14:16 (likely 14:13-14:19); note: none"
+        "option 1 (recommended, fastest): 41 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Sebring Regional Airport at 14:16 (likely 14:13-14:19); note: none"
       ]
     },
     {
       "case": 37,
-      "source": "template",
-      "summary": "Fastest route: about 36 min to Highlands Regional Medical Center, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as the fastest route, taking 36 minutes with no expected wait and low traffic, arriving at Highlands Regional Medical Center around 14:10.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 36 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Highlands Regional Medical Center at 14:10 (likely 14:07-14:13); note: none"
+        "option 1 (recommended, fastest): 36 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Highlands Regional Medical Center at 14:10 (likely 14:07-14:13); note: none"
       ]
     },
     {
       "case": 38,
-      "source": "template",
-      "summary": "Fastest route: about 19 min to Parramore (Downtown Orlando), low traffic. The next option takes 11 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 19 minutes flying with no expected wait and low traffic, arriving at Parramore (Downtown Orlando) around 14:16. Option 2 takes 30 minutes flying and arrives approximately 11 minutes later.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 19 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 14:16 (likely 14:15-14:18); note: none",
+        "option 1 (recommended, fastest): 19 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 14:16 (likely 14:15-14:18); note: none",
         "option 2 (alternative): 30 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 14:27 (likely 14:24-14:29); note: none"
       ]
     },
     {
       "case": 39,
-      "source": "template",
-      "summary": "Fastest route: about 43 min to Orlando Executive Airport, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as the fastest route, taking 43 minutes with no expected wait and low traffic, arriving at Orlando Executive Airport between 13:44 and 13:50.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 43 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 13:47 (likely 13:44-13:50); note: none"
+        "option 1 (recommended, fastest): 43 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Orlando Executive Airport at 13:47 (likely 13:44-13:50); note: none"
       ]
     },
     {
       "case": 40,
-      "source": "template",
-      "summary": "Fastest route: about 2 min to Parramore (Downtown Orlando), low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 2 minutes to fly with no expected wait and low traffic; you'll arrive at Parramore (Downtown Orlando) around 13:36.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 2 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 13:36 (likely 13:35-13:36); note: none"
+        "option 1 (recommended, fastest): 2 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Parramore (Downtown Orlando) at 13:36 (likely 13:35-13:36); note: none"
       ]
     },
     {
       "case": 41,
-      "source": "template",
-      "summary": "Fastest route: about 11 min to Lakeland Linder Intl Airport, low traffic. The next option takes 23 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 11 minutes flying with no expected wait and low traffic, arriving at Lakeland Linder Intl Airport at 13:31. Option 2 takes significantly longer, with a 34-minute flight and arrival at 13:54.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 11 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Lakeland Linder Intl Airport at 13:31 (likely 13:30-13:32); note: none",
+        "option 1 (recommended, fastest): 11 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Lakeland Linder Intl Airport at 13:31 (likely 13:30-13:32); note: none",
         "option 2 (alternative): 34 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Lakeland Linder Intl Airport at 13:54 (likely 13:51-13:57); note: none"
       ]
     },
     {
       "case": 42,
-      "source": "template",
-      "summary": "Fastest route: about 28 min to Lakeland Linder Intl Airport, low traffic. The next option takes 10 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is the fastest route, taking 28 minutes flying with no expected wait time and low traffic, arriving at Lakeland Linder Intl Airport at 14:17. Options 2 and 3 take longer, adding 10 and 14 minutes respectively to the flight time.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 28 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Lakeland Linder Intl Airport at 14:17 (likely 14:15-14:19); note: none",
+        "option 1 (recommended, fastest): 28 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Lakeland Linder Intl Airport at 14:17 (likely 14:15-14:19); note: none",
         "option 2 (alternative): 38 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Lakeland Linder Intl Airport at 14:27 (likely 14:24-14:30); note: none",
         "option 3 (alternative): 42 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Lakeland Linder Intl Airport at 14:31 (likely 14:28-14:34); note: none"
       ]
     },
     {
       "case": 43,
-      "source": "template",
-      "summary": "Fastest route: about 41 min to Sebring Regional Airport, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 41 minutes with no expected wait and low traffic, arriving at Sebring Regional Airport between 14:11 and 14:17.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 41 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Sebring Regional Airport at 14:14 (likely 14:11-14:17); note: none"
+        "option 1 (recommended, fastest): 41 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Sebring Regional Airport at 14:14 (likely 14:11-14:17); note: none"
       ]
     },
     {
       "case": 44,
-      "source": "template",
-      "summary": "Fastest route: about 17 min to Osceola Regional Medical Center, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 17 minutes with no expected wait and low traffic, arriving at Osceola Regional Medical Center around 13:56.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 17 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Osceola Regional Medical Center at 13:56 (likely 13:55-13:57); note: none"
+        "option 1 (recommended, fastest): 17 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Osceola Regional Medical Center at 13:56 (likely 13:55-13:57); note: none"
       ]
     },
     {
       "case": 45,
-      "source": "template",
-      "summary": "Fastest route: about 23 min to SunTrax (FDOT AAM test site), low traffic. The next option takes 9 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 23 minutes flying with no expected wait time and low traffic, arriving at SunTrax at 13:29. Option 2 takes 32 minutes flying and arrives 9 minutes later.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 23 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive SunTrax (FDOT AAM test site) at 13:29 (likely 13:27-13:30); note: none",
+        "option 1 (recommended, fastest): 23 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive SunTrax (FDOT AAM test site) at 13:29 (likely 13:27-13:30); note: none",
         "option 2 (alternative): 32 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive SunTrax (FDOT AAM test site) at 13:38 (likely 13:36-13:41); note: none"
       ]
     },
     {
       "case": 46,
-      "source": "template",
-      "summary": "Fastest route: about 18 min to Lakeland Linder Intl Airport, low traffic. The next option takes 10 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 18 minutes flying with no expected wait and low traffic, arriving at Lakeland Linder Intl Airport at 13:51. Option 2 takes 28 minutes flying and arrives 10 minutes later.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 18 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Lakeland Linder Intl Airport at 13:51 (likely 13:50-13:53); note: none",
+        "option 1 (recommended, fastest): 18 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Lakeland Linder Intl Airport at 13:51 (likely 13:50-13:53); note: none",
         "option 2 (alternative): 28 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Lakeland Linder Intl Airport at 14:01 (likely 13:58-14:03); note: none"
       ]
     },
     {
       "case": 47,
-      "source": "template",
-      "summary": "Fastest route: about 42 min to Water Street (Downtown Tampa), low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 42 minutes with no expected wait and low traffic, arriving at Water Street (Downtown Tampa) around 14:30.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 42 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Water Street (Downtown Tampa) at 14:30 (likely 14:27-14:34); note: none"
+        "option 1 (recommended, fastest): 42 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Water Street (Downtown Tampa) at 14:30 (likely 14:27-14:34); note: none"
       ]
     },
     {
       "case": 48,
       "source": "template",
-      "summary": "Fastest route: about 23 min to SunTrax (FDOT AAM test site), low traffic. The next option takes 9 min longer.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
-      "bad_numbers": [],
+      "summary": "Recommended route: about 23 min to SunTrax (FDOT AAM test site), low traffic. The next option takes 9 min longer.",
+      "rejected": "Option 1 is recommended as it is the fastest route, taking 23 minutes flying with no expected wait time and low traffic, arriving at SunTrax at 13:53. Option 2 takes 32 minutes flying and arrives 10 minutes later.",
+      "bad_numbers": [
+        "10"
+      ],
       "facts": [
-        "option 1 (fastest): 23 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive SunTrax (FDOT AAM test site) at 13:53 (likely 13:51-13:55); note: none",
+        "option 1 (recommended, fastest): 23 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive SunTrax (FDOT AAM test site) at 13:53 (likely 13:51-13:55); note: none",
         "option 2 (alternative): 32 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive SunTrax (FDOT AAM test site) at 14:03 (likely 14:00-14:05); note: none"
       ]
     },
     {
       "case": 49,
-      "source": "template",
-      "summary": "Fastest route: about 25 min to Poinciana Medical Center, low traffic.",
-      "rejected": "error: HTTP Error 401: Unauthorized",
+      "source": "llm",
+      "summary": "Option 1 is recommended as it is the fastest route, taking 25 minutes with no expected wait and low traffic, arriving at Poinciana Medical Center around 13:34.",
+      "rejected": null,
       "bad_numbers": [],
       "facts": [
-        "option 1 (fastest): 25 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Poinciana Medical Center at 13:34 (likely 13:32-13:36); note: none"
+        "option 1 (recommended, fastest): 25 min flying, 0 min expected wait, traffic low, bunching risk 0%, arrive Poinciana Medical Center at 13:34 (likely 13:32-13:36); note: none"
       ]
     }
   ]
