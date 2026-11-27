@@ -30,8 +30,17 @@ import numpy as np
 
 from aerolink.forecast.cv import CVForecaster
 from aerolink.forecast.features import POSITION_FEATURES, position_row, position_targets
-from aerolink.forecast.gbm import AXES, COVERAGE_TARGET, MODEL_DIR, GBMForecaster, fit_calibrated, predict_q
-from aerolink.forecast.simdata import EtaSamples, eta_samples, position_samples, run_scenarios
+from aerolink.forecast.gbm import (
+    AXES,
+    COVERAGE_TARGET,
+    MODEL_DIR,
+    GBMForecaster,
+    conformalize,
+    fit_calibrated,
+    fit_models,
+    predict_q,
+)
+from aerolink.forecast.simdata import EtaSamples, departure_mask, eta_samples, position_samples, run_scenarios
 from aerolink.network import Network
 from aerolink.realdata.benchmark import predict_all, score
 from aerolink.realdata.samples import DATA_DIR, PositionSamples, build_position_samples, list_days, split_days
@@ -39,6 +48,7 @@ from aerolink.realdata.samples import DATA_DIR, PositionSamples, build_position_
 BACKEND = Path(__file__).resolve().parents[3]
 DEFAULT_OUT = BACKEND / "eval-results" / "aerolink-gbm-e5.3.json"
 ETA_BUCKETS_MIN = [5, 10, 20, 30, 45]
+MIN_DEPARTURE_CAL = 30  # fewer calibration rows than this: departure queries share the in-flight calibration
 
 
 def _group_split(groups: np.ndarray, frac: float, seed: int) -> np.ndarray:
@@ -94,6 +104,8 @@ def frame_coverage(models, data) -> list[dict]:
 
 def eta_report(model, data: EtaSamples) -> list[dict]:
     """ETA error and coverage per horizon bucket (CV remaining time), CV vs aerolink-gbm."""
+    if not len(data.y_log_ratio):
+        return []
     q = np.exp(predict_q(model, data.X)) * data.cv_remaining_s[:, None]
     cv_half = np.maximum(30.0, 0.08 * data.cv_remaining_s)
     rows = []
@@ -116,6 +128,24 @@ def eta_report(model, data: EtaSamples) -> list[dict]:
             }
         )
     return rows
+
+
+def departure_report(model, data: EtaSamples) -> dict:
+    """Departure queries only: p10-p90 coverage and MAE overall, CV vs aerolink-gbm."""
+    if not len(data.y_log_ratio):
+        return {"n": 0}
+    q = np.exp(predict_q(model, data.X)) * data.cv_remaining_s[:, None]
+    act = data.actual_remaining_s
+    cv_half = np.maximum(30.0, 0.08 * data.cv_remaining_s)
+    return {
+        "n": int(len(act)),
+        "cv_mae_s": round(float(np.abs(act - data.cv_remaining_s).mean()), 1),
+        "gbm_mae_s": round(float(np.abs(act - q[:, 1]).mean()), 1),
+        "cv_coverage": round(float((np.abs(act - data.cv_remaining_s) <= cv_half).mean()), 3),
+        "gbm_coverage": round(float(((act >= q[:, 0]) & (act <= q[:, 2])).mean()), 3),
+        "share_after_p90": round(float((act > q[:, 2]).mean()), 3),
+        "median_signed_error_s": round(float(np.median(act - q[:, 1])), 1),
+    }
 
 
 def _sha256(path: Path) -> str:
@@ -184,7 +214,21 @@ def main(argv: list[str] | None = None) -> int:
     Xe[rng.random(len(Xe)) < 0.1, hour_col] = np.nan
     Xe[rng.random(len(Xe)) < 0.1, -1] = np.nan  # traffic_ahead is not always known either
     cal = _group_split(eta_train.group, 0.2, a.seed)
-    eta_model = fit_calibrated(Xe[~cal], eta_train.y_log_ratio[~cal], Xe[cal], eta_train.y_log_ratio[cal], a.seed)
+    dep = departure_mask(eta_train.X)
+    y_eta = eta_train.y_log_ratio
+    # One fit on all samples (the ``from_rest`` feature separates departure from in-flight
+    # queries), calibrated twice so the 80% target holds for each kind of query: the
+    # departure samples are ~3% of the rows, so one pooled calibration would be set by the
+    # in-flight residuals and miss at departure, which is the only place routes ask.
+    eta_fit = fit_models(Xe[~cal], y_eta[~cal], a.seed)
+    eta_model = conformalize(eta_fit, Xe[cal & ~dep], y_eta[cal & ~dep])
+    n_dep_cal = int((cal & dep).sum())
+    eta_departure = conformalize(eta_fit, Xe[cal & dep], y_eta[cal & dep]) if n_dep_cal >= MIN_DEPARTURE_CAL else None
+    print(
+        f"  ETA head: {int((~cal).sum()):,} fit; calibration {int((cal & ~dep).sum()):,} in-flight"
+        f" / {n_dep_cal} departure",
+        flush=True,
+    )
 
     a.model_dir.mkdir(parents=True, exist_ok=True)
     model_path = a.model_dir / "model.joblib"
@@ -199,10 +243,17 @@ def main(argv: list[str] | None = None) -> int:
         "samples": {
             "position_fit_and_calibration": {str(h): int(len(v[0])) for h, v in pos.items()},
             "eta": int(len(eta_train.y_log_ratio)),
+            "eta_departure": int(dep.sum()),
+            "eta_departure_calibration": n_dep_cal,
         },
+        "run_env": "HF_HUB_OFFLINE=1 OMP_NUM_THREADS=1 (torch and LightGBM clash over libomp on macOS)",
         "libraries": {p: version(p) for p in ["lightgbm", "mapie", "scikit-learn", "numpy"]},
     }
-    joblib.dump({"position": pos_models, "eta": eta_model, "manifest": manifest}, model_path, compress=3)
+    joblib.dump(
+        {"position": pos_models, "eta": eta_model, "eta_departure": eta_departure, "manifest": manifest},
+        model_path,
+        compress=3,
+    )
     manifest["sha256"] = _sha256(model_path)
     (a.model_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     print(f"wrote {model_path} ({model_path.stat().st_size / 1e6:.1f} MB)")
@@ -242,7 +293,10 @@ def main(argv: list[str] | None = None) -> int:
         "position_calibration_coverage_real_held_out": (
             frame_coverage(pos_models, position_xy(real_test, None, rng)) if real_test is not None else None
         ),
-        "eta_sim_held_out": eta_report(eta_model, eta_test),
+        "eta_sim_held_out": eta_report(eta_model, eta_test.subset(~departure_mask(eta_test.X))),
+        "eta_departure_sim_held_out": departure_report(
+            eta_model if eta_departure is None else eta_departure, eta_test.subset(departure_mask(eta_test.X))
+        ),
         "minutes": round((time.monotonic() - started) / 60, 1),
     }
     a.out.parent.mkdir(parents=True, exist_ok=True)
@@ -264,6 +318,7 @@ def main(argv: list[str] | None = None) -> int:
             cv_txt = "/".join(f"{c.get('coverage_' + ax, 0):.0%}" for ax in AXES)
             print(f"  {label:<9} {h:>3}s  {errs}   coverage along/cross/up {cv_txt}")
     print("\nETA head (simulated held-out): mean absolute error and p10-p90 coverage")
+    print("ETA at departure (what the route engine asks):", report["eta_departure_sim_held_out"])
     for r in report["eta_sim_held_out"]:
         if r["n"]:
             print(

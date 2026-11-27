@@ -30,15 +30,13 @@ from aerolink.contracts import VehicleType
 from aerolink.forecast.features import (
     POSITION_HORIZONS_S,
     cv_point,
-    cv_speed,
     cv_state,
-    eta_row,
+    eta_query_row,
     from_track_frame,
     position_row,
 )
 from aerolink.forecast.interface import EtaPrediction, Forecaster, NodeEta, PositionPrediction
 from aerolink.network import Network
-from aerolink.vehicle import vehicle_cfg
 
 MODEL_DIR = Path(__file__).resolve().parents[3] / "models" / "aerolink-gbm"
 AXES = ("along", "cross", "up")
@@ -71,14 +69,27 @@ def make_quantile_model(alpha: float, seed: int) -> lgb.LGBMRegressor:
     )
 
 
-def fit_calibrated(
-    X_train: np.ndarray, y_train: np.ndarray, X_cal: np.ndarray, y_cal: np.ndarray, seed: int
-) -> ConformalizedQuantileRegressor:
-    """Three quantile models (p10, p90, p50, in MAPIE's order) + conformal calibration."""
-    models = [make_quantile_model(a, seed).fit(X_train, y_train) for a in (0.1, 0.9, 0.5)]
+def fit_models(X_train: np.ndarray, y_train: np.ndarray, seed: int) -> list[lgb.LGBMRegressor]:
+    """Three quantile models (p10, p90, p50, in MAPIE's order)."""
+    return [make_quantile_model(a, seed).fit(X_train, y_train) for a in (0.1, 0.9, 0.5)]
+
+
+def conformalize(models: list[lgb.LGBMRegressor], X_cal: np.ndarray, y_cal: np.ndarray):
+    """Conformal calibration of fitted quantile models on ``X_cal``.
+
+    Calling this twice on the same models gives two calibrations of one fit, so the 80%
+    target can hold separately on two kinds of query (departure vs in-flight ETAs).
+    """
     cqr = ConformalizedQuantileRegressor(cast(Any, models), confidence_level=COVERAGE_TARGET, prefit=True)
     cqr.conformalize(X_cal, y_cal)
     return cqr
+
+
+def fit_calibrated(
+    X_train: np.ndarray, y_train: np.ndarray, X_cal: np.ndarray, y_cal: np.ndarray, seed: int
+) -> ConformalizedQuantileRegressor:
+    """Three quantile models + conformal calibration."""
+    return conformalize(fit_models(X_train, y_train, seed), X_cal, y_cal)
 
 
 def predict_q(model: ConformalizedQuantileRegressor, X: np.ndarray) -> np.ndarray:
@@ -93,6 +104,7 @@ class GBMForecaster(Forecaster):
         self.network = network
         self.position: dict[tuple[int, str], ConformalizedQuantileRegressor] = bundle["position"]
         self.eta: ConformalizedQuantileRegressor | None = bundle.get("eta")
+        self.eta_departure: ConformalizedQuantileRegressor | None = bundle.get("eta_departure")
         self.manifest: dict = bundle.get("manifest", {})
         # Optional context the route engine sets before asking for ETAs (A2+): number of
         # planned flights sharing a node with the path being scored.
@@ -186,24 +198,13 @@ class GBMForecaster(Forecaster):
         current_speed_mps: float | None = None,
     ) -> EtaPrediction:
         assert self.network is not None and self.eta is not None, "ETA head needs the network and an ETA model"
-        cruise = vehicle_cfg(vehicle_type).cruise_speed_mps
-        speed = cv_speed(cruise, current_speed_mps)
-        total_m = self.network.route_length_m(path)
-        cv_total = total_m / max(1.0, speed)
-        merges = sum(self.network.graph.degree(n) >= 3 for n in path[1:-1])
-        row = eta_row(
-            vehicle_type,
-            self.local_hour,
-            total_m,
-            cv_total,
-            # not airborne yet (no speed): assume cruise, as the training flights were in the air
-            current_speed_mps if current_speed_mps is not None and current_speed_mps > 1.0 else cruise,
-            cruise,
-            len(path),
-            merges,
-            self.traffic_ahead,
+        row, speed = eta_query_row(
+            self.network, path, vehicle_type, self.local_hour, self.traffic_ahead, current_speed_mps
         )
-        r10, r50, r90 = np.exp(predict_q(self.eta, np.array([row]))[0])
+        from_rest = not (current_speed_mps is not None and current_speed_mps > 1.0)
+        # departure queries have their own conformal calibration (older bundles: one model for both)
+        model = (self.eta if self.eta_departure is None else self.eta_departure) if from_rest else self.eta
+        r10, r50, r90 = np.exp(predict_q(model, np.array([row]))[0])
         etas: list[NodeEta] = []
         cumul_m = 0.0
         for i, node in enumerate(path):

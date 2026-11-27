@@ -1,0 +1,168 @@
+# Orlando event egress: a downtown arena event ends and a ~30-minute surge of passengers leaves for
+# Lakeland and SunTrax, with two medical emergencies on the same corridor (PLAN E1 story 3).
+#
+# PREMISE (user-approved): an event in downtown Orlando ends at 22:00 local on a Saturday night. Air-taxi
+# passengers leave from the two sites serving it, ev-parramore (downtown) and ev-orl (Orlando Executive).
+# The surge runs 22:05-22:35.
+#
+# DEVIATION FROM THE PREMISE, flagged for review: the premise also lists Tampa (ev-water-st). Both Orlando
+# sites to Tampa are 135-140 km on the network, which costs 0.86-0.89 of a full battery (cruise energy plus
+# the takeoff and landing allowance, sim/energy.py) against 0.80 usable with the 20% reserve. No aircraft can fly
+# them, so a surge leg to Tampa could only fail with "no route". Tampa-bound passengers are not modelled here.
+# Destinations are Lakeland (ev-lal, 95-100 km, 0.62 of a battery) and SunTrax (70-75 km, 0.47).
+#
+# PARAMETERS AND WHY (fixed before any comparison run; never changed after seeing results)
+# * Demand scale: FDOT AAM Business Plan (Nov 2025), 220,000 to 1,400,000 AAM passenger trips in Florida in
+#   2027 (see demand/synthetic.py). x 27% Central Florida share (assumption, synthetic.py) / 365 =
+#   163 to 1,036 trips a day. We take the geometric midpoint, ~411 a day, as a plausible 2027-2030 level.
+#   The sim's own diurnal shape puts 8.8% of a day's trips in the peak hour (sim.demand.diurnal_rate_per_hour,
+#   default peaks) -> ~36 departures an hour region-wide at the daily peak.
+# * Fleet: passenger aircraft needed = departures per hour x block time. Block time (flight + landing +
+#   turnaround) is ~0.55 h for the 70-100 km legs here -> ~20 aircraft; 24 gives the event operator a
+#   few spare. Medical: 4, as in sebring_race_weekend (standby for a large crowd).
+# * Staging: an operator expecting the event positions aircraft at the venue. 10 passenger aircraft at
+#   ev-parramore and 10 at ev-orl (the two sites the surge starts from); the other 4 are spread as in every
+#   scenario. Both sites get 10 stands, one per staged aircraft, so all pads stay free for takeoffs and landings.
+# * Parking at the destinations: the simulator's operator never sends a parked aircraft away (it leaves
+#   only on its next random trip), so a site that receives more aircraft than it has pads plus stands would fill
+#   with parked aircraft and arrivals would hold until their batteries ran out. The surge sends 10 aircraft to each of
+#   ev-lal and ev-suntrax, so both get 10 stands, as a venue-event operator would arrange parking.
+# * Surge: 20 departures in 30 minutes (one every 90 s, alternating origins: 40 an hour, a bit above the 36 an
+#   hour regional peak, because an event ends all at once). 5 flights per origin-destination pair every 360 s:
+#   10 to Lakeland (2 pads) and 10 to SunTrax (4 pads). Each origin sends 10, which is the aircraft it holds.
+# * Medical: two scripted emergencies on the I-4 corridor, 22:12 at AdventHealth Celebration (hp-77fl) and
+#   22:24 at Lakeland Regional (hp-7fd7), inside the surge. Random dispatches are off so there are exactly two.
+# * Background demand: 0.1 trip requests per aircraft per hour (below the 0.3 daytime off-peak default:
+#   late-night baseline), so the surge dominates.
+# * Wind 4 m/s from 90 deg (calm evening), the other settings are the committed scenarios' defaults.
+name: orlando_event_egress
+seed: 49
+start_time: "2026-11-21T22:00:00-05:00"
+duration_s: 7200
+dt_s: 1.0
+fleet:
+  passenger: 24
+  medical: 4
+fleet_staging:
+  ev-parramore: 10
+  ev-orl: 10
+stand_capacity:
+  ev-parramore: 10
+  ev-orl: 10
+  ev-lal: 10
+  ev-suntrax: 10
+pad_turnaround_time_s: 180
+max_hold_s: 600
+suggestion_acceptance_rate: 1.0
+destination_change_probability: 0.02
+cruise_speed_sigma: 0.03
+route_options: 3
+demand:
+  peak_rate_per_hour: 0.1
+  off_peak_rate_per_hour: 0.1
+  morning_peak_hour: 8.0
+  evening_peak_hour: 18.0
+  peak_width_h: 1.5
+  return_home_probability: 0.5
+  medical_dispatch_mean_interval_s: 0
+wind:
+  speed_mps: 4.0
+  direction_deg: 90.0
+  gust_fraction: 0.2
+telemetry_noise:
+  position_m: 5.0
+  speed_mps: 0.5
+  dropout_rate: 0.0
+world:
+  separation: true
+  energy: true
+  pad_booking: true
+  arrival_metering: true
+  schedules: true
+  background_traffic: false
+medical_incidents:
+  - at_local: "22:12:00"
+    node: "hp-77fl"
+  - at_local: "22:24:00"
+    node: "hp-7fd7"
+schedule:
+  - aircraft: "passenger"
+    origin: "ev-parramore"
+    destination: "ev-lal"
+    departure_local: "22:05:00"
+  - aircraft: "passenger"
+    origin: "ev-orl"
+    destination: "ev-lal"
+    departure_local: "22:06:30"
+  - aircraft: "passenger"
+    origin: "ev-parramore"
+    destination: "ev-suntrax"
+    departure_local: "22:08:00"
+  - aircraft: "passenger"
+    origin: "ev-orl"
+    destination: "ev-suntrax"
+    departure_local: "22:09:30"
+  - aircraft: "passenger"
+    origin: "ev-parramore"
+    destination: "ev-lal"
+    departure_local: "22:11:00"
+  - aircraft: "passenger"
+    origin: "ev-orl"
+    destination: "ev-lal"
+    departure_local: "22:12:30"
+  - aircraft: "passenger"
+    origin: "ev-parramore"
+    destination: "ev-suntrax"
+    departure_local: "22:14:00"
+  - aircraft: "passenger"
+    origin: "ev-orl"
+    destination: "ev-suntrax"
+    departure_local: "22:15:30"
+  - aircraft: "passenger"
+    origin: "ev-parramore"
+    destination: "ev-lal"
+    departure_local: "22:17:00"
+  - aircraft: "passenger"
+    origin: "ev-orl"
+    destination: "ev-lal"
+    departure_local: "22:18:30"
+  - aircraft: "passenger"
+    origin: "ev-parramore"
+    destination: "ev-suntrax"
+    departure_local: "22:20:00"
+  - aircraft: "passenger"
+    origin: "ev-orl"
+    destination: "ev-suntrax"
+    departure_local: "22:21:30"
+  - aircraft: "passenger"
+    origin: "ev-parramore"
+    destination: "ev-lal"
+    departure_local: "22:23:00"
+  - aircraft: "passenger"
+    origin: "ev-orl"
+    destination: "ev-lal"
+    departure_local: "22:24:30"
+  - aircraft: "passenger"
+    origin: "ev-parramore"
+    destination: "ev-suntrax"
+    departure_local: "22:26:00"
+  - aircraft: "passenger"
+    origin: "ev-orl"
+    destination: "ev-suntrax"
+    departure_local: "22:27:30"
+  - aircraft: "passenger"
+    origin: "ev-parramore"
+    destination: "ev-lal"
+    departure_local: "22:29:00"
+  - aircraft: "passenger"
+    origin: "ev-orl"
+    destination: "ev-lal"
+    departure_local: "22:30:30"
+  - aircraft: "passenger"
+    origin: "ev-parramore"
+    destination: "ev-suntrax"
+    departure_local: "22:32:00"
+  - aircraft: "passenger"
+    origin: "ev-orl"
+    destination: "ev-suntrax"
+    departure_local: "22:33:30"

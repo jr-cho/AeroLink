@@ -21,7 +21,10 @@ from aerolink.sim.world_config import WorldToggles
 
 ROOT = Path(__file__).resolve().parents[1]
 NOMINAL = ROOT / "scenarios" / "nominal_day.yaml"
-PRE_STANDS_GOLDEN = "ca0015d73ffc3eb384d9a263a09169e2f7305a54ee3c6229fda901a0b85242cc"  # noqa: E501
+# Regenerated at E1 (hand-off fixes: one reachability rule, destinations a full battery can reach, parked aircraft
+# charge, departure events carry request/prediction fields). Not the pre-stand behaviour byte for byte any more;
+# it still pins "no stands" against the current simulator.
+PRE_STANDS_GOLDEN = "19c62bfc903ffe61b3c243f8a78fddefd75a31fc0bda8c0317bd3ce05ec5eb07"  # noqa: E501
 
 
 def stands(ctl: Controller, **counts: int) -> Controller:

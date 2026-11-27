@@ -90,6 +90,7 @@ class ControllerConfig:
     pad_booking: PadBookingConfig = field(default_factory=PadBookingConfig)
     background_traffic: BackgroundTrafficConfig = field(default_factory=BackgroundTrafficConfig)
     schedule: list = field(default_factory=list)
+    medical_incidents: list = field(default_factory=list)
 
     @property
     def background_traffic_aircraft(self):
@@ -157,21 +158,24 @@ class Controller:
         self.world.wind.resample_gust(self.world.rng)
 
         self.operator.grant_pads()
+        self.operator.clear_pads_for_emergencies(
+            lambda ac, site: self.pilots[ac.aircraft_id].depart(site, purpose="reposition", log_unavailable=False)
+        )
 
         # schedule handling must happen before per-step pilot updates so the
         # aircraft is still parked at the scheduled departure time
         if self.cfg.world.schedules:
             self.operator.handle_schedule(
-                lambda ac, node, purpose, dispatch_t: self.pilots[ac.aircraft_id]._depart_with_booking(
-                    node, purpose=purpose, dispatch_t=dispatch_t
+                lambda ac, node, purpose, dispatch_t, **kw: self.pilots[ac.aircraft_id]._depart_with_booking(
+                    node, purpose=purpose, dispatch_t=dispatch_t, **kw
                 )
             )
         else:
             self.operator.handle_schedule(lambda *args, **kwargs: None)
         self.operator.medical_demand()
         self.operator.resolve_dispatches(
-            lambda ac, node, purpose, dispatch_t: self.pilots[ac.aircraft_id]._depart_with_booking(
-                node, purpose=purpose, dispatch_t=dispatch_t
+            lambda ac, node, purpose, dispatch_t, **kw: self.pilots[ac.aircraft_id]._depart_with_booking(
+                node, purpose=purpose, dispatch_t=dispatch_t, **kw
             )
         )
 

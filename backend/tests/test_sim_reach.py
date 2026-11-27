@@ -274,16 +274,19 @@ def test_destination_change_only_within_range(line_network: Network):
 
 
 # ------------------------------------------------------------------ remaining branches
-def test_due_trip_rejected_when_nothing_fits(line_network: Network):
+def test_due_trip_waits_for_charge_when_a_full_battery_would_fit(line_network: Network):
+    # Changed with the E1 reachability fix: destinations are chosen from what a *full* battery can fly, so a
+    # low battery means "charge first" (one charge_wait, trip kept), no longer "rejected". A trip no full
+    # battery can fly is still rejected: see test_due_trip_rejected_without_destination and test_e1_regressions.
     ctl = make_controller(line_network, {"p1": ("passenger", "a")})
     ac = ctl.world.aircraft["p1"]
     ac.battery_soc = 0.01  # 1.6 km: no site is that close
     ac.next_trip_s = 0.0
     ctl.step()
-    (rej,) = kinds(ctl, evlib.TRIP_REJECTED)
-    assert rej["destination"] in {"b", "c"} and ac.status == "parked"
     ctl.step()
-    assert len(kinds(ctl, evlib.TRIP_REJECTED)) == 1  # the trip is consumed, not retried every step
+    assert kinds(ctl, evlib.TRIP_REJECTED) == [] and ac.status == "parked"
+    (wait,) = kinds(ctl, evlib.CHARGE_WAIT)  # logged once, the trip stays due
+    assert wait["destination"] in {"b", "c"}
 
 
 def test_due_trip_rejected_without_destination():

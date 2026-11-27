@@ -115,6 +115,8 @@ class AircraftState:
     departure_waiting: bool = False  # on a stand, waiting for a free pad to take off from
     scheduled_until_s: float | None = None  # reserved for a scheduled leg until this time
     predicted_total_s: float | None = None  # B1 advisory prediction at departure
+    pending_destination: str | None = None  # trip waiting for the battery to charge
+    low_energy_emergency: bool = False  # reached its reserve while holding: first in line for a pad slot
 
     @property
     def airborne(self) -> bool:

@@ -26,7 +26,7 @@ import numpy as np
 from aerolink.demand.forecaster import ChronosCounts, DemandModel, DestinationModel, tod_mean
 from aerolink.demand.synthetic import DEFAULT_DIR as DEMAND_DIR
 from aerolink.demand.synthetic import count_matrix, load
-from aerolink.eval.harness import _count_events, make_advisor
+from aerolink.eval.harness import _count_events, flight_metrics, make_advisor
 from aerolink.forecast.cv import CVForecaster
 from aerolink.forecast.gbm import GBMForecaster
 from aerolink.network import Network
@@ -85,50 +85,77 @@ def run_one(network: Network, scenario_file: Path, config: str, seed: int, gbm, 
         scenario = replace(scenario, suggestion_acceptance_rate=0.5)
     result = run_simulation(network, scenario, seed=seed, advisor=advisor_for(config, network, gbm, demand))
     ev = result.events
-    deps = {e["flight_id"]: e for e in ev if e["kind"] == "departure"}
-    trips = [e["t"] - deps[e["flight_id"]]["t"] for e in ev if e["kind"] == "arrival" and e.get("flight_id") in deps]
-    medical = [e["response_time_s"] for e in ev if e["kind"] == "arrival" and "response_time_s" in e]
+    fm = flight_metrics(ev)
     holding_s = sum(scenario.dt_s for r in result.truth if r["status"] == "holding")
     return {
         "scenario": scenario.name,
         "config": config,
         "seed": seed,
-        "trips": len(trips),
-        "trip_time_mean_s": float(np.mean(trips)) if trips else None,
-        "trip_time_p95_s": float(np.quantile(trips, 0.95)) if trips else None,
+        "trips": fm["trips"],
+        "trip_time_mean_s": fm["trip_time_mean_s"],
+        "trip_time_p95_s": fm["trip_time_p95_s"],
+        "door_to_door_mean_s": fm["door_to_door_mean_s"],
+        "door_to_door_p95_s": fm["door_to_door_p95_s"],
+        "ground_delay_mean_s": fm["ground_delay_mean_s"],
+        "ground_delay_p95_s": fm["ground_delay_p95_s"],
         "holding_s_total": holding_s,
-        "holding_s_per_trip": holding_s / max(1, len(trips)),
+        "holding_s_per_trip": holding_s / max(1, fm["trips"]),
+        "eta_flights": fm["eta_flights"],
+        "eta_covered": fm["eta_covered"],
+        "eta_error_mean_s": fm["eta_error_mean_s"],
+        "eta_error_p90_s": fm["eta_error_p90_s"],
+        "eta_error_cruise_mean_s": fm["eta_error_cruise_mean_s"],
+        "eta_error_cruise_p90_s": fm["eta_error_cruise_p90_s"],
         "no_route": _count_events(ev, "route_unavailable"),
-        "suggestions_accepted": sum(1 for e in ev if e["kind"] == "suggestion" and e.get("accepted")),
+        "schedule_conflicts": _count_events(ev, "schedule_conflict"),
+        "suggestions_offered": fm["suggestions_offered"],
+        "suggestions_accepted": fm["suggestions_accepted"],
+        "suggestion_predicted_saving_s": fm["suggestion_predicted_saving_s"],
         "bunching_events": _count_events(ev, "bunching"),
         "loss_of_separation": _count_events(ev, "loss_of_separation"),
-        "medical_response_mean_s": float(np.mean(medical)) if medical else None,
+        "medical_response_mean_s": fm["medical_response_mean_s"],
     }
 
 
+def _weighted(rs: list[dict], key: str, weight: str) -> float | None:
+    vals = [(r[key], r[weight]) for r in rs if r.get(key) is not None and r.get(weight)]
+    return sum(v * w for v, w in vals) / sum(w for _, w in vals) if vals else None
+
+
 def summarize(rows: list[dict]) -> list[dict]:
+    """One row per configuration. Means are weighted by flights; ``p95``/``p90`` are the
+    flight-weighted mean of each run's own percentile (as before), not a pooled percentile."""
     out = []
     for c in CONFIGS:
         rs = [r for r in rows if r["config"] == c]
         if not rs:
             continue
         trips = sum(r["trips"] for r in rs)
-
-        def wmean(key: str, rs=rs) -> float | None:
-            vals = [(r[key], r["trips"]) for r in rs if r[key] is not None and r["trips"]]
-            return sum(v * w for v, w in vals) / sum(w for _, w in vals) if vals else None
-
         med = [r["medical_response_mean_s"] for r in rs if r["medical_response_mean_s"] is not None]
+        eta_n = sum(r["eta_flights"] for r in rs)
         out.append(
             {
                 "config": c,
                 "runs": len(rs),
                 "trips": trips,
-                "trip_time_mean_s": wmean("trip_time_mean_s"),
-                "trip_time_p95_s": wmean("trip_time_p95_s"),
+                "trip_time_mean_s": _weighted(rs, "trip_time_mean_s", "trips"),
+                "trip_time_p95_s": _weighted(rs, "trip_time_p95_s", "trips"),
+                "door_to_door_mean_s": _weighted(rs, "door_to_door_mean_s", "trips"),
+                "door_to_door_p95_s": _weighted(rs, "door_to_door_p95_s", "trips"),
+                "ground_delay_mean_s": _weighted(rs, "ground_delay_mean_s", "trips"),
+                "ground_delay_p95_s": _weighted(rs, "ground_delay_p95_s", "trips"),
                 "holding_s_per_trip": sum(r["holding_s_total"] for r in rs) / max(1, trips),
+                "eta_flights": eta_n,
+                "eta_error_mean_s": _weighted(rs, "eta_error_mean_s", "eta_flights"),
+                "eta_error_p90_s": _weighted(rs, "eta_error_p90_s", "eta_flights"),
+                "eta_error_cruise_mean_s": _weighted(rs, "eta_error_cruise_mean_s", "eta_flights"),
+                "eta_error_cruise_p90_s": _weighted(rs, "eta_error_cruise_p90_s", "eta_flights"),
+                "eta_coverage": sum(r["eta_covered"] for r in rs) / eta_n if eta_n else None,
                 "no_route": sum(r["no_route"] for r in rs),
+                "schedule_conflicts": sum(r["schedule_conflicts"] for r in rs),
+                "suggestions_offered": sum(r["suggestions_offered"] for r in rs),
                 "suggestions_accepted": sum(r["suggestions_accepted"] for r in rs),
+                "suggestion_predicted_saving_s": sum(r["suggestion_predicted_saving_s"] for r in rs),
                 "bunching_events": sum(r["bunching_events"] for r in rs),
                 "loss_of_separation": sum(r["loss_of_separation"] for r in rs),
                 "medical_response_mean_s": float(np.mean(med)) if med else None,
@@ -141,29 +168,43 @@ def markdown(summary: list[dict], seeds: list[int] | None, n_scenarios: int) -> 
     def f(v, d=0):
         return "–" if v is None else f"{v:,.{d}f}"
 
+    def pct(v):
+        return "–" if v is None else f"{v:.0%}"
+
     seed_text = "each scenario's own seed" if not seeds else f"seeds {', '.join(map(str, seeds))}"
     lines = [
         f"Measured over {n_scenarios} scenarios, {seed_text} (`python -m aerolink.eval.ablations`, "
-        "`backend/eval-results/m5-ablations.json`). Times in seconds; trips = completed flights.",
+        "`backend/eval-results/m5-ablations.json`). Times in seconds; trips = completed flights. "
+        "Door-to-door = trip request to landing; ground delay = request to departure (pad-slot holds); "
+        "ETA error and coverage compare the landing with the prediction made at departure "
+        "(B1: fixed ±60 s window; A: p10-p90; B0 predicts nothing); the prediction is the ETA plus the waits "
+        "the advisor predicts, and the cruise-only column scores the ETA alone; suggestion saving is the "
+        "advisor's predicted saving of the accepted ones.",
         "",
-        "| # | Configuration | Trips | Mean trip | p95 trip | Holding / trip | No route | Suggestions | "
-        "Bunching | Medical response |",
-        "|---|---|---|---|---|---|---|---|---|---|",
+        "| # | Configuration | Trips | Mean trip | Door-to-door mean | Door-to-door p95 | Ground delay | "
+        "Holding / trip | ETA error mean | ETA error p90 | Cruise-only ETA error mean | Window coverage | "
+        "Suggestions offered / accepted | "
+        "Predicted saving | No route | Bunching | Medical response |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for s in summary:
         lines.append(
             f"| {s['config']} | {DESCRIPTIONS[s['config']]} | {s['trips']} | {f(s['trip_time_mean_s'])} | "
-            f"{f(s['trip_time_p95_s'])} | {f(s['holding_s_per_trip'], 1)} | {s['no_route']} | "
-            f"{s['suggestions_accepted']} | {s['bunching_events']} | {f(s['medical_response_mean_s'])} |"
+            f"{f(s['door_to_door_mean_s'])} | {f(s['door_to_door_p95_s'])} | {f(s['ground_delay_mean_s'], 1)} | "
+            f"{f(s['holding_s_per_trip'], 1)} | {f(s['eta_error_mean_s'])} | {f(s['eta_error_p90_s'])} | "
+            f"{f(s['eta_error_cruise_mean_s'])} | "
+            f"{pct(s['eta_coverage'])} | {s['suggestions_offered']} / {s['suggestions_accepted']} | "
+            f"{f(s['suggestion_predicted_saving_s'])} | {s['no_route']} | {s['bunching_events']} | "
+            f"{f(s['medical_response_mean_s'])} |"
         )
     b1 = next((s for s in summary if s["config"] == "B1"), None)
     a5 = next((s for s in summary if s["config"] == "A5"), None)
-    if b1 and a5 and b1["trip_time_mean_s"] and a5["trip_time_mean_s"]:
-        d = a5["trip_time_mean_s"] - b1["trip_time_mean_s"]
+    if b1 and a5 and b1["door_to_door_mean_s"] and a5["door_to_door_mean_s"]:
+        d = a5["door_to_door_mean_s"] - b1["door_to_door_mean_s"]
         h = a5["holding_s_per_trip"] - b1["holding_s_per_trip"]
         lines += [
             "",
-            f"**B1 vs A5 (as measured):** mean trip time {d:+,.0f} s ({d / b1['trip_time_mean_s']:+.1%}), "
+            f"**B1 vs A5 (as measured):** mean door-to-door time {d:+,.0f} s ({d / b1['door_to_door_mean_s']:+.1%}), "
             f"holding per trip {h:+,.1f} s, bunching events {a5['bunching_events'] - b1['bunching_events']:+d}.",
         ]
     return "\n".join(lines)

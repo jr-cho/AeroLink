@@ -3,6 +3,7 @@
 import json
 from pathlib import Path
 
+import lightgbm  # noqa: F401  (must load before torch: two libomp copies crash on macOS)
 import numpy as np
 import pytest
 import torch

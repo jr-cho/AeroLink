@@ -1,0 +1,12 @@
+{
+  "schema_version": "4.1",
+  "message_id": "6f1c2a4e-8b3d-4c1a-9e2f-0a1b2c3d4e5f",
+  "aircraft_id": "dev-001",
+  "timestamp": "2026-11-26T15:00:00Z",
+  "uptime_s": 3725.5,
+  "reset_reason": "power_on",
+  "wifi_rssi_dbm": -61,
+  "gnss": {"fix": "3d", "satellites": 11, "hdop": 0.9},
+  "free_heap_bytes": 182340,
+  "firmware_version": "0.4.2"
+}

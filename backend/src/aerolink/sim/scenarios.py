@@ -14,7 +14,7 @@ from typing import Any
 
 import yaml
 
-from aerolink.sim.demand import DemandConfig, parse_schedule
+from aerolink.sim.demand import DemandConfig, _time_to_seconds, parse_schedule
 from aerolink.sim.pads import DEFAULT_TURNAROUND_S
 from aerolink.sim.telemetry import TelemetryNoise
 from aerolink.sim.world_config import (
@@ -51,6 +51,7 @@ class Scenario:
     duration_s: float = 3600.0
     dt_s: float = 1.0
     fleet: dict[str, int] = field(default_factory=lambda: {"passenger": 7, "medical": 3})
+    fleet_staging: dict[str, int] = field(default_factory=dict)  # {site: passenger aircraft based there at t=0}
     network_file: str | None = None  # relative to the repo root; default central-fl-v1
     pad_turnaround_time_s: float = DEFAULT_TURNAROUND_S
     pad_capacity: dict[str, int] = field(default_factory=dict)
@@ -64,6 +65,9 @@ class Scenario:
     wind: WindConfig = field(default_factory=WindConfig)
     telemetry_noise: TelemetryNoise = field(default_factory=TelemetryNoise)
     schedule: list[dict[str, Any]] = field(default_factory=list)
+    # Scripted medical incidents: [{at_local: "HH:MM:SS", node: "<helipad id>"}], each raised once at that
+    # local time. For scenarios that need an emergency at a known place and time.
+    medical_incidents: list[dict[str, str]] = field(default_factory=list)
     world: WorldToggles = field(default_factory=WorldToggles)
     separation: SeparationConfig = field(default_factory=SeparationConfig)
     energy: EnergyConfig = field(default_factory=EnergyConfig)
@@ -91,6 +95,14 @@ class Scenario:
             raise ValueError(f"unknown fleet vehicle types: {sorted(unknown)}")
         if any(v < 0 for v in self.fleet.values()):
             raise ValueError("fleet counts must be non-negative")
+        for i, item in enumerate(self.medical_incidents):
+            if not isinstance(item, dict) or set(item) != {"at_local", "node"}:
+                raise ValueError(f"medical_incidents[{i}] must have exactly the keys at_local and node")
+            _time_to_seconds(item["at_local"])  # raises on a bad HH:MM:SS
+        if any(v < 0 for v in self.fleet_staging.values()):
+            raise ValueError("fleet_staging counts must be non-negative")
+        if sum(self.fleet_staging.values()) > self.fleet.get("passenger", 0):
+            raise ValueError("fleet_staging places more aircraft than the passenger fleet has")
 
     @property
     def network_path(self) -> Path:

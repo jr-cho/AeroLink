@@ -1,0 +1,16 @@
+{
+  "schema_version": "4.1",
+  "message_id": "0b9a7f5e-3c2d-4e1f-8a6b-5d4c3b2a1908",
+  "aircraft_id": "sim-003",
+  "timestamp": "2026-11-26T15:00:10Z",
+  "uptime_s": 12,
+  "reset_reason": "watchdog",
+  "wifi_rssi_dbm": -84,
+  "gnss": {
+    "fix": "none",
+    "satellites": 0,
+    "hdop": 99.9
+  },
+  "free_heap_bytes": 90112,
+  "firmware_version": "0.4.2-rc1"
+}

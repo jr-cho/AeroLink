@@ -46,3 +46,12 @@ def test_b1_suggest_only_improves(fl_network: Network):
     # A shorter route should beat the current shortest by definition; just confirm
     # request_routes returns the best option first.
     assert first == min(opts, key=lambda o: o.total_predicted_s)
+
+
+def test_point_to_segment_uses_lon_lat_order():
+    """Regression: is_off_route passed (lat, lon), so the longitude scale used cos(longitude)."""
+    from aerolink.navigation.b1 import _point_to_segment_m
+
+    # A north-south segment at 28°N; a point 0.003° of longitude east ≈ 0.003 * 111 km * cos(28°) ≈ 294 m.
+    d = _point_to_segment_m(-81.997, 28.0, -82.0, 27.9, -82.0, 28.1)
+    assert d == pytest.approx(294.0, rel=0.02)

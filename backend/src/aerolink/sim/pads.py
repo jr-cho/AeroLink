@@ -245,8 +245,11 @@ def leave_queue(pad: PadState, aircraft_id: str) -> None:
         pad.queue.remove(aircraft_id)
 
 
-def grant_from_queue(pad: PadState) -> list[str]:
-    """Hand free slots to queued aircraft in FIFO order; return those cleared."""
+def grant_from_queue(pad: PadState, priority: frozenset[str] | set[str] = frozenset()) -> list[str]:
+    """Hand free slots to queued aircraft in FIFO order, those in ``priority`` (low-energy
+    emergencies) first; return those cleared."""
+    if priority:
+        pad.queue.sort(key=lambda a: a not in priority)  # stable: FIFO within each group
     cleared: list[str] = []
     while pad.queue and pad.has_free_slot():
         aid = pad.queue.pop(0)

@@ -1,0 +1,71 @@
+# FDOT high-end peak hour: the HIGH end of the FDOT AAM plan's own 2027 range, in the simulator's demand
+# model, in its busiest hour (PLAN E1 follow-up A).
+#
+# PREMISE (user-approved): the FDOT AAM Business Plan (Nov 2025) forecasts 220,000 to 1,400,000 AAM passenger
+# trips in Florida in 2027. Take the top of that range. Run the simulator's own demand model through its own
+# morning peak. No corridors, schedules or destinations are chosen by hand: where trips start and end comes from
+# the model (each trip request picks a destination among the sites an aircraft can fly to on a full battery,
+# `sim.fleet.choose_destination`; the diurnal rate is `sim.demand.diurnal_rate_per_hour`).
+#
+# PARAMETERS AND WHY (fixed before any comparison run; never changed after seeing results)
+# * Daily demand: 1,400,000 trips x 27% Central Florida share (assumption, demand/synthetic.py) / 365
+#   = 1,036 passenger departures a day.
+# * Peak hour: the simulator's diurnal shape (default peaks and widths) puts 8.8% of a day's trips in its busiest
+#   hour, so 1,036 x 0.088 = ~91 departures an hour region-wide. The hour is 07:30-08:30: it is centred on the
+#   model's morning peak (morning_peak_hour 8.0). A Tuesday, so no weekend reduction.
+# * Fleet: aircraft needed = departures per hour x block time. Block time (flight, landing, turnaround) is
+#   ~0.55 h for the 70-100 km legs of this network (same figure as orlando_event_egress and i4_corridor_rush).
+#   91 x 0.55 = 50 passenger aircraft. Medical: 4, as in sebring_race_weekend (the medical rate does not scale
+#   with passenger demand: default dispatch interval, one per 30 minutes).
+# * Request rate: demand model rates are per aircraft: 91 / 50 = 1.83 requests per aircraft per hour at the peak.
+#   off_peak keeps the default ratio to the peak (0.3 / 1.5 = 0.2): 0.366.
+# * Parking: 50 aircraft do not fit the committed sites (2 pads + 2 stands each, SunTrax 4 + 4). A 2027-2030 network
+#   built for a ~1,000-trip day would have larger vertiports, so every site gets 10 stands (pads unchanged): 74
+#   parking places for 50 aircraft. Landing capacity (pads) is untouched.
+# * Everything else follows nominal_day / i4_peak: 240 s turnaround, wind 6 m/s from 270 deg, 2% destination
+#   changes, return-home probability 0.5, all world toggles on, no schedules.
+name: fdot_high_peak
+seed: 51
+start_time: "2026-11-24T07:30:00-05:00"
+duration_s: 3600
+dt_s: 1.0
+fleet:
+  passenger: 50
+  medical: 4
+stand_capacity:
+  ev-sef: 10
+  ev-water-st: 10
+  ev-orl: 10
+  ev-parramore: 10
+  ev-lal: 10
+  ev-suntrax: 10
+pad_turnaround_time_s: 240
+max_hold_s: 600
+suggestion_acceptance_rate: 1.0
+destination_change_probability: 0.02
+cruise_speed_sigma: 0.03
+route_options: 3
+demand:
+  peak_rate_per_hour: 1.83
+  off_peak_rate_per_hour: 0.366
+  morning_peak_hour: 8.0
+  evening_peak_hour: 18.0
+  peak_width_h: 1.5
+  return_home_probability: 0.5
+  medical_dispatch_mean_interval_s: 1800
+wind:
+  speed_mps: 6.0
+  direction_deg: 270.0
+  gust_fraction: 0.2
+telemetry_noise:
+  position_m: 5.0
+  speed_mps: 0.5
+  dropout_rate: 0.0
+world:
+  separation: true
+  energy: true
+  pad_booking: true
+  arrival_metering: true
+  schedules: false
+  background_traffic: false
+schedule: []

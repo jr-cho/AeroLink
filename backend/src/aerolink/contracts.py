@@ -17,6 +17,7 @@ SCHEMA_VERSION = "4.0"
 # --- shared types (common.schema.json) ----------------------------------------
 SchemaVersion = Literal["4.0"]
 AircraftId = Annotated[str, Field(pattern=r"^[a-z0-9][a-z0-9-]{1,31}$")]
+Callsign = Annotated[str, Field(pattern=r"^[A-Z0-9-]{2,10}$")]
 NodeId = Annotated[str, Field(pattern=r"^[a-z]{2}-[a-z0-9-]+$")]
 EdgeId = Annotated[str, Field(pattern=r"^[a-z]{2}-[a-z0-9-]+->[a-z]{2}-[a-z0-9-]+$")]
 VehicleType = Literal["passenger", "medical"]
@@ -62,6 +63,9 @@ class Fix(Strict):
 
 
 class Telemetry(Message):
+    # v4.1 (additive, G2): a unit may report its callsign; 4.0 telemetry (no callsign) stays valid
+    schema_version: Literal["4.0", "4.1"]  # ty: ignore[incompatible-attribute-override]  # deliberate widening (additive 4.1)
+    callsign: Callsign | None = None
     aircraft_id: AircraftId
     vehicle_type: VehicleType
     timestamp: Timestamp
@@ -97,6 +101,16 @@ class Eta(Strict):
 Waypoint = tuple[Lat, Lon, AltMslM]
 
 
+class Segment(Strict):
+    """One leg of a route: the AI-predicted traffic level when the aircraft reaches its far end (U-API §1)."""
+
+    model_config = ConfigDict(serialize_by_alias=True)
+    from_: NodeId = Field(alias="from")
+    to: NodeId
+    eta_s: NonNeg  # epoch seconds (p50) of reaching ``to``
+    level: TrafficLevel
+
+
 class Route(Strict):
     route_id: UUID
     rank: Annotated[int, Field(ge=1, le=3)]
@@ -110,6 +124,7 @@ class Route(Strict):
     reason: Annotated[str, Field(max_length=200)]
     eta: Annotated[list[Eta], Field(min_length=1)]
     waypoints: Annotated[list[Waypoint], Field(min_length=2)]
+    segments: list[Segment] = []  # optional on the wire: older units ignore it; the backend always sends it
 
 
 class RouteResponse(Message):
@@ -150,6 +165,7 @@ class FlightStatus(Message):
     status: Literal["planned", "active", "off_route", "replaced", "ended"]
     reason: Annotated[str, Field(max_length=200)] | None
     timestamp: Timestamp
+    detected_by: Literal["ai", "rule"] | None = None  # optional (contract §7): off_route only; who flagged it
 
 
 # --- traffic ---------------------------------------------------------------------
@@ -177,12 +193,36 @@ class Traffic(Message):
     edges: Annotated[list[EdgeTraffic], Field(max_length=100)]
 
 
+# --- health heartbeat (contract v4.1, additive: every v4.0 message is unchanged) --------------
+class HealthGnss(Strict):
+    fix: Literal["none", "2d", "3d"]
+    satellites: Annotated[int, Field(ge=0, le=64)]
+    hdop: NonNeg
+
+
+class Health(Strict):
+    """``aerolink/aircraft/{id}/health`` (and ``aerolink/sim/{id}/health``), every 10 s."""
+
+    schema_version: Literal["4.1"]
+    message_id: UUID
+    aircraft_id: AircraftId
+    timestamp: Timestamp
+    uptime_s: NonNeg
+    reset_reason: Annotated[str, Field(pattern=r"^[a-z0-9_]{1,32}$")]
+    wifi_rssi_dbm: Annotated[int, Field(ge=-127, le=0)]
+    gnss: HealthGnss
+    free_heap_bytes: Annotated[int, Field(ge=0)]
+    firmware_version: Annotated[str, Field(min_length=1, max_length=32)]
+    supply_mv: Annotated[int, Field(ge=0, le=60000)] | None = None
+
+
 # Schema name (contracts/schemas/<name>.schema.json) -> model
-MODELS: dict[str, type[Message]] = {
+MODELS: dict[str, type[Strict]] = {
     "telemetry": Telemetry,
     "route-request": RouteRequest,
     "route-response": RouteResponse,
     "route-selection": RouteSelection,
     "flight-status": FlightStatus,
     "traffic": Traffic,
+    "health": Health,
 }

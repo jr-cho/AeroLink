@@ -1,0 +1,92 @@
+# I-4 corridor rush: scheduled shuttles in both directions along I-4 through wp-kissimmee and wp-i4-us27
+# (and, for the second route, wp-haines-city) on a weekday morning (PLAN E1 story 3).
+#
+# PREMISE (user-approved): shuttle operators run timetables between Orlando, SunTrax and Lakeland along the
+# I-4 corridor during the morning rush, in both directions, on top of the usual random trips.
+#
+# PARAMETERS AND WHY (fixed before any comparison run; never changed after seeing results)
+# * Demand scale: FDOT AAM Business Plan (Nov 2025), 220,000 to 1,400,000 AAM passenger trips in Florida in
+#   2027 (see demand/synthetic.py). x 27% Central Florida share (assumption, synthetic.py) / 365 =
+#   163 to 1,036 trips a day. We take the geometric midpoint, ~411 a day, as a plausible 2027-2030 level.
+#   The sim's own diurnal shape puts 8.8% of a day's trips in the peak hour (sim.demand.diurnal_rate_per_hour,
+#   default peaks) -> ~36 departures an hour region-wide at the peak.
+# * Fleet: aircraft needed = departures per hour x block time. Block time is ~0.55 h for 70-100 km legs
+#   (flight, landing, 4-minute turnaround) -> ~20 aircraft; 22 allows ~10% spare. Medical: 3, as in i4_peak.
+# * Shuttles: ~31 scheduled departures an hour, about 85% of the 36 an hour peak, the rest being random trips.
+#   All legs fit one battery with the 20% reserve (energy 0.47 to 0.62; sim/energy.py).
+#     ev-parramore <-> ev-suntrax every 480 s each way (7.5 an hour each way): the busiest I-4 pair, 70 km
+#     ev-orl       <-> ev-suntrax every 720 s each way (5 an hour each way): 75 km
+#     ev-lal       <-> ev-parramore every 1200 s each way (3 an hour each way): 95 km
+#   Departure times are staggered by a few minutes so the flows meet at wp-orlando, wp-kissimmee and
+#   wp-i4-us27 rather than leaving in lock-step.
+# * Random demand: 0.3 trip requests per aircraft per hour, the committed default off-peak rate
+#   (~7 an hour), so scheduled + random ~ 38 an hour. Dispatches: one per 20 minutes on average (i4_peak: 15).
+# * Start 07:30 on a Tuesday, one hour. Wind 6 m/s from 270 deg, 240 s turnaround, like i4_peak.
+name: i4_corridor_rush
+seed: 50
+start_time: "2026-11-24T07:30:00-05:00"
+duration_s: 3600
+dt_s: 1.0
+fleet:
+  passenger: 22
+  medical: 3
+pad_turnaround_time_s: 240
+max_hold_s: 600
+suggestion_acceptance_rate: 1.0
+destination_change_probability: 0.02
+cruise_speed_sigma: 0.03
+route_options: 3
+demand:
+  peak_rate_per_hour: 0.3
+  off_peak_rate_per_hour: 0.3
+  morning_peak_hour: 8.0
+  evening_peak_hour: 18.0
+  peak_width_h: 1.0
+  return_home_probability: 0.5
+  medical_dispatch_mean_interval_s: 1200
+wind:
+  speed_mps: 6.0
+  direction_deg: 270.0
+  gust_fraction: 0.2
+telemetry_noise:
+  position_m: 5.0
+  speed_mps: 0.5
+  dropout_rate: 0.0
+world:
+  separation: true
+  energy: true
+  pad_booking: true
+  arrival_metering: true
+  schedules: true
+  background_traffic: false
+schedule:
+  - aircraft: "passenger"
+    origin: "ev-parramore"
+    destination: "ev-suntrax"
+    departure_local: "07:35:00"
+    repeat_every_s: 480
+  - aircraft: "passenger"
+    origin: "ev-suntrax"
+    destination: "ev-parramore"
+    departure_local: "07:37:00"
+    repeat_every_s: 480
+  - aircraft: "passenger"
+    origin: "ev-orl"
+    destination: "ev-suntrax"
+    departure_local: "07:36:00"
+    repeat_every_s: 720
+  - aircraft: "passenger"
+    origin: "ev-suntrax"
+    destination: "ev-orl"
+    departure_local: "07:39:00"
+    repeat_every_s: 720
+  - aircraft: "passenger"
+    origin: "ev-lal"
+    destination: "ev-parramore"
+    departure_local: "07:38:00"
+    repeat_every_s: 1200
+  - aircraft: "passenger"
+    origin: "ev-parramore"
+    destination: "ev-lal"
+    departure_local: "07:41:00"
+    repeat_every_s: 1200

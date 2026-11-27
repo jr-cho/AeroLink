@@ -132,35 +132,58 @@ class AeroLinkAdvisor(A1Advisor):
         vehicle_type: VehicleType,
         t_s: float,
         planned: list[FlightPlan] | None = None,
+        current_speed_mps: float | None = None,
     ) -> list[A1RouteOption]:
         paths = self._candidate_paths(origin, destination, vehicle_type)
         if not paths:
             return []
         planned = self.planned_flights() if planned is None else planned
-        traffic = forecast_traffic(list(planned), self._capacities(planned), self.expected_flights(t_s))
+        traffic = self._traffic(planned, t_s)
         options = []
         for path in paths:
-            if isinstance(self.forecaster, GBMForecaster):  # aerolink-gbm uses traffic and time of day
-                nodes = set(path[1:])
-                self.forecaster.traffic_ahead = float(sum(1 for p in planned if nodes & set(p.eta_by_node)))
-                self.forecaster.local_hour = self.local_hour(t_s)
             options.append(
                 self._score(
-                    path, self.forecaster.predict_eta(path, t_s, vehicle_type), vehicle_type, t_s, traffic, planned
+                    path,
+                    self._eta(path, t_s, vehicle_type, planned, current_speed_mps),
+                    vehicle_type,
+                    t_s,
+                    traffic,
+                    planned,
                 )
             )
         options.sort(key=lambda o: o.total_predicted_s)
         return options
+
+    def _eta(self, path, t_s, vehicle_type, planned, current_speed_mps=None):
+        if isinstance(self.forecaster, GBMForecaster):  # aerolink-gbm uses traffic and time of day
+            nodes = set(path[1:])
+            self.forecaster.traffic_ahead = float(sum(1 for p in planned or [] if nodes & set(p.eta_by_node)))
+            self.forecaster.local_hour = self.local_hour(t_s)
+        return self.forecaster.predict_eta(path, t_s, vehicle_type, current_speed_mps=current_speed_mps)
+
+    def _traffic(self, planned: list[FlightPlan] | None, t_s: float):
+        """Planned flights plus expected (demand) and off-route mass, per the ablation config."""
+        return forecast_traffic(list(planned or []), self._capacities(planned), self.expected_flights(t_s))
 
     def suggest(
         self, ac: AircraftState, from_node: str, t_s: float, planned: list[FlightPlan] | None = None
     ) -> A1RouteOption | None:
         if not self.config.en_route:
             return None
+        if planned is None:  # everyone else's flights; the aircraft doesn't queue behind itself
+            own = ac.active_flight.flight_id if ac.active_flight is not None else None
+            planned = [p for p in self.planned_flights() if p.flight_id != own]
         return super().suggest(ac, from_node, t_s, planned)
 
     def recalculate(
-        self, flight_id: str, lat: float, lon: float, destination: str, vehicle_type: VehicleType, t_s: float
+        self,
+        flight_id: str,
+        lat: float,
+        lon: float,
+        destination: str,
+        vehicle_type: VehicleType,
+        t_s: float,
+        current_speed_mps: float | None = None,
     ) -> list[A1RouteOption]:
         """Off route: mark the flight ``off_route`` and return fresh options from the nearest node."""
         self.flight_status[flight_id] = "off_route"
@@ -169,7 +192,7 @@ class AeroLinkAdvisor(A1Advisor):
             (n for n in self.network.nodes if self.network.graph.degree(n) > 0),
             key=lambda n: (self.network.nodes[n]["lat"] - lat) ** 2 + ((self.network.nodes[n]["lon"] - lon) * k) ** 2,
         )
-        return self.request_routes(nearest, destination, vehicle_type, t_s)
+        return self.request_routes(nearest, destination, vehicle_type, t_s, current_speed_mps=current_speed_mps)
 
 
 class AeroLinkRouteAdvisorWrapper:
@@ -180,6 +203,10 @@ class AeroLinkRouteAdvisorWrapper:
 
     def bind(self, world: WorldState, controller: Any) -> None:
         self.advisor.bind(world, controller)
+
+    @property
+    def last_gain_s(self) -> float | None:
+        return self.advisor.last_gain_s
 
     def request_routes(self, origin: str, destination: str, vehicle_type: VehicleType, t_s: float) -> list[list[str]]:
         return [o.path for o in self.advisor.request_routes(origin, destination, vehicle_type, t_s)]

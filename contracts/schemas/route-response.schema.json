@@ -227,6 +227,34 @@
               "items": false,
               "minItems": 3
             }
+          },
+          "segments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "from",
+                "to",
+                "eta_s",
+                "level"
+              ],
+              "properties": {
+                "from": {
+                  "$ref": "common.schema.json#/$defs/node_id"
+                },
+                "to": {
+                  "$ref": "common.schema.json#/$defs/node_id"
+                },
+                "eta_s": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "level": {
+                  "$ref": "common.schema.json#/$defs/traffic_level"
+                }
+              }
+            }
           }
         }
       }

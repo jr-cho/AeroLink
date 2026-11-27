@@ -30,8 +30,14 @@ SCENARIO = Path(__file__).resolve().parents[1] / "scenarios" / "nominal_day.yaml
 #               toggles off is still f0495770 (GOLDEN_ALL_OFF).
 #   1f291935... E3.3 T3/T4: pad booking and arrival metering switched on in
 #               nominal_day.yaml. All toggles off is still f0495770.
-GOLDEN = "855ce8ea2f6818086276be1c1fa16ede5322ccf3e9325c04fac74f597ea5c4dd"
-GOLDEN_ALL_OFF = "9521a524c9430cd18879c3dc40b5dba4d122061e3b8d8998f181684214788d2d"
+#   96fce3ab... E1: (1) the hand-off fixes (one reachability rule; passenger destinations limited to
+#               those a full battery can fly, which changes the destination draws; parked aircraft charge;
+#               a due trip waits to charge) and (2) departure events gain request_t, ground_delay_s,
+#               predicted_arrival_s and predicted_window_s. With (2) removed the digest is 51284143...,
+#               the output of the tree with only (1), so (2) is the whole of the later change.
+#               All toggles off: 6bd2e819...
+GOLDEN = "96fce3ab7b28c614ab9872a17c6aff778b0156e4c079f1703ef34a40d35e9724"
+GOLDEN_ALL_OFF = "6bd2e819d1d75b17104a33473ef5c41f9f519b80fd76d7c4add81b91b4c0ac9a"
 
 
 def test_nominal_day_golden_digest():

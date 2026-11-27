@@ -28,6 +28,8 @@ PAD_CLEARED = "pad_cleared"
 PAD_REQUESTED = "pad_requested"
 READY = "ready"
 ROUTE_UNAVAILABLE = "route_unavailable"
+LOW_ENERGY_EMERGENCY = "low_energy_emergency"  # a holding aircraft reached its energy reserve
+CHARGE_WAIT = "charge_wait"  # a trip is due but the battery must charge first
 SLOT_PREBOOKED = "slot_prebooked"
 SLOT_TAKEN = "slot_taken"
 SUGGESTION = "suggestion"
@@ -67,6 +69,8 @@ ALL: frozenset[str] = frozenset(
         PAD_WAIT,
         READY,
         ROUTE_UNAVAILABLE,
+        CHARGE_WAIT,
+        LOW_ENERGY_EMERGENCY,
         SCHEDULED_DEPARTURE,
         SCHEDULE_CONFLICT,
         SLOT_PREBOOKED,

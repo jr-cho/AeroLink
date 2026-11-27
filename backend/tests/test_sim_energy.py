@@ -132,7 +132,8 @@ def test_low_energy_departure_refused(line_network: Network):
 
 
 def test_holding_diverts_before_reserve_is_breached(line_network: Network):
-    """A long hold forces a low-charge aircraft to divert before max_hold_s."""
+    """A long hold forces a low-charge aircraft to declare an emergency and, if no slot frees at
+    the destination in time, divert (E1: later than before, at the last safe moment, not at the reserve)."""
     energy = EnergyConfig(reserve_soc=0.20, charge_rate_soc_per_s=0.001)
     vehicle = vehicle_cfg("passenger")
 
@@ -161,11 +162,19 @@ def test_holding_diverts_before_reserve_is_breached(line_network: Network):
     # Leave a tiny active leg so nearest_alternate_energy has a current edge to work from.
     ac.legs = ph.build_legs(["w2", "b"], line_network, 60.0)
     ac.distance_along_edge_m = 0.0
+    from uuid import uuid4
+
+    from aerolink.sim.state import FlightPlan
+
+    ac.active_flight = FlightPlan(  # the emergency needs the flight it is on (destination b, flown from w2)
+        uuid4(), uuid4(), uuid4(), ["w2", "b"], "b", 0.0, {"w2": 0.0, "b": 100.0}, flown=["w2"]
+    )
 
     world = WorldState(t=0.0, aircraft={"t-1": ac}, pads={}, rng=np.random.default_rng(0))
     world.pads = {
         "b": PadState("b", 1, occupants=["other"], queue=["t-1"]),
         "a": PadState("a", 1),
+        "c": PadState("c", 2),  # an emergency diverts only to a site with a free pad
     }
     cfg = ControllerConfig(world=WorldToggles(energy=True), energy=energy, max_hold_s=600.0)
     pilot = Pilot("t-1", line_network, world, _StubAdvisor(line_network), cfg)

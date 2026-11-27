@@ -15,6 +15,7 @@ from aerolink.sim import pads as padlib
 from aerolink.sim.demand import sample_next_trip_s
 from aerolink.sim.events import (
     ARRIVAL,
+    CHARGE_WAIT,
     DEPARTURE,
     DEPARTURE_RELEASED,
     DEPARTURE_WAIT,
@@ -24,6 +25,7 @@ from aerolink.sim.events import (
     DIVERSION_UNAVAILABLE,
     HOLD_START,
     LANDING,
+    LOW_ENERGY_EMERGENCY,
     PAD_REQUESTED,
     READY,
     ROUTE_UNAVAILABLE,
@@ -33,12 +35,14 @@ from aerolink.sim.events import (
 )
 from aerolink.sim.fleet import choose_destination, pad_position
 from aerolink.sim.physics import PAD_ALT_M, advance, build_legs, directional_alt_m
-from aerolink.sim.reach import ROUTE_RETRY_S, can_get_home, fits
+from aerolink.sim.reach import ROUTE_RETRY_S, can_get_home, fits, path_fits
 from aerolink.sim.separation import stack_hold_distance_m
 from aerolink.sim.spacing import horizontal_m
 from aerolink.sim.state import AIRBORNE, AircraftState, FlightLeg, FlightPlan, FlightPurpose, WorldState
 from aerolink.sim.telemetry import seeded_uuid
 from aerolink.vehicle import vehicle_cfg
+
+EMERGENCY_MARGIN_SOC = 0.02  # charge kept beyond the diversion's estimate (it is conservative, but not exact)
 
 
 class Pilot:
@@ -161,17 +165,49 @@ class Pilot:
                 return True
         return False
 
+    def _charge_on_ground(self) -> None:
+        """Parked aircraft keep charging at the pad (the same rate as during turnaround)."""
+        energy_cfg = self.cfg.energy if self.cfg.world.energy else None
+        if energy_cfg is not None:
+            self.ac.battery_soc = min(1.0, self.ac.battery_soc + energy_cfg.charge_rate_soc_per_s * self.cfg.dt_s)
+
+    def _needs_charge(self, destination: str) -> bool:
+        """The shortest route fits a full battery but not the current charge: wait and charge."""
+        ac = self.ac
+        assert ac.current_node is not None
+        paths = self.network.shortest_paths(ac.current_node, destination, vehicle_type=ac.vehicle_type, k=1)
+        return bool(paths) and not self._path_fits(paths[0])
+
+    def _wait_for_charge(self, destination: str) -> None:
+        ac = self.ac
+        if ac.pending_destination != destination:
+            ac.pending_destination = destination
+            self.log(CHARGE_WAIT, destination=destination, soc=round(ac.battery_soc, 6))
+
     def parked(self) -> None:
         self.clear_off()
+        self._charge_on_ground()
         ac = self.ac
+        if ac.scheduled_until_s is not None and ac.scheduled_until_s > self.world.t:
+            return  # reserved for a scheduled leg that is waiting for a pad slot
         if ac.vehicle_type == "passenger":
             if ac.next_trip_s is None or ac.next_trip_s > self.world.t:
                 return
             if not self.ready_to_leave():
                 return  # the trip stays due; retried next step
-            dest = choose_destination(self.network, ac, ac.rng, self.cfg.demand.return_home_probability)
+            dest = ac.pending_destination or choose_destination(
+                self.network,
+                ac,
+                ac.rng,
+                self.cfg.demand.return_home_probability,
+                self.cfg.energy if self.cfg.world.energy else None,
+            )
+            if dest is not None and self._needs_charge(dest):
+                self._wait_for_charge(dest)
+                return  # the trip stays due until the battery can fly it
+            ac.pending_destination = None
             first_failure = ac.retry_at_s is None
-            ok = dest is not None and self._depart_with_booking(dest, purpose="passenger")
+            ok = dest is not None and self._depart_with_booking(dest, purpose="passenger", request_t=ac.next_trip_s)
             ac.next_trip_s = sample_next_trip_s(self.world.t, self.cfg.start_local_hour, ac.rng, self.cfg.demand)
             if not ok:
                 if first_failure:
@@ -181,6 +217,10 @@ class Pilot:
                 return
             if not self.ready_to_leave():
                 return
+            if self._needs_charge(ac.home_node):
+                self._wait_for_charge(ac.home_node)
+                return
+            ac.pending_destination = None
             first_failure = ac.retry_at_s is None
             if self._depart_with_booking(ac.home_node, purpose="medical_return", log_unavailable=first_failure):
                 ac.retry_at_s = None
@@ -194,6 +234,7 @@ class Pilot:
         dispatch_t: float | None = None,
         planned_speeds: list[float] | None = None,
         log_unavailable: bool = True,
+        request_t: float | None = None,
     ) -> bool:
         """Try to depart, booking an arrival slot first when pad_booking is on."""
         ac = self.ac
@@ -219,8 +260,8 @@ class Pilot:
                     self.world.pads[destination], self.world.t, duration, aircraft_id=ac.aircraft_id
                 )
                 if nxt is not None:
-                    ac.ground_hold_until_s = nxt - self._flight_time_to(destination, nxt)
-                    if ac.ground_hold_until_s <= self.world.t:
+                    hold_until = nxt - self._flight_time_to(destination, nxt)
+                    if hold_until <= self.world.t:
                         # We can leave immediately and still arrive at/after nxt.
                         slot = self._book_arrival_slot(destination, nxt)
                         if slot is not None:
@@ -231,10 +272,13 @@ class Pilot:
                                 planned_speeds=planned_speeds,
                                 pad_booking=slot,
                                 log_unavailable=log_unavailable,
+                                request_t=request_t,
                             )
                         ac.ground_hold_until_s = None
-                    else:
-                        self.log("ground_hold", node=destination, until_s=round(ac.ground_hold_until_s, 6))
+                    elif ac.ground_hold_until_s != hold_until:
+                        # (retried every step by dispatches and schedules: log a hold once, not each retry)
+                        ac.ground_hold_until_s = hold_until
+                        self.log("ground_hold", node=destination, until_s=round(hold_until, 6))
                 return False
             return self.depart(
                 destination,
@@ -243,6 +287,7 @@ class Pilot:
                 planned_speeds=planned_speeds,
                 pad_booking=slot,
                 log_unavailable=log_unavailable,
+                request_t=request_t,
             )
         return self.depart(
             destination,
@@ -250,6 +295,7 @@ class Pilot:
             dispatch_t=dispatch_t,
             planned_speeds=planned_speeds,
             log_unavailable=log_unavailable,
+            request_t=request_t,
         )
 
     def _slot_duration(self, destination: str) -> float:
@@ -295,11 +341,14 @@ class Pilot:
         planned_speeds: list[float] | None = None,
         pad_booking: tuple[str, float, float] | None = None,
         log_unavailable: bool = True,
+        request_t: float | None = None,
     ) -> bool:
         """Depart from the current pad to ``destination``.
 
         Only routes that fit the remaining battery range are flown.
         ``pad_booking`` = (pad_id, t_start, t_end) if a slot was pre-booked.
+        ``request_t`` is when the trip was asked for (default: the dispatch time, else now);
+        departure minus request is the ground delay, arrival minus request is door-to-door time.
         """
         ac = self.ac
         origin = ac.current_node
@@ -315,10 +364,14 @@ class Pilot:
             return False
         path = paths[0]
         # store the B1-style prediction if the advisor exposes one.
+        predicted: dict = {}
         if hasattr(self.advisor, "predict"):
             b1_option = self.advisor.predict(origin, destination, ac.vehicle_type, self.world.t)
             b1_option = [p for p in b1_option if self._path_fits(p.path)]
-            predicted_total_s = b1_option[0].total_predicted_s if b1_option else None
+            chosen = next((o for o in b1_option if o.path == path), b1_option[0] if b1_option else None)
+            predicted_total_s = chosen.total_predicted_s if chosen else None
+            if chosen:
+                predicted = self._prediction(chosen)
         else:
             predicted_total_s = None
         cruise = vehicle_cfg(ac.vehicle_type).cruise_speed_mps
@@ -368,6 +421,8 @@ class Pilot:
         ac.hold_remaining_m = 0.0
         ac.predicted_total_s = predicted_total_s
         self.world.planned.append(plan)
+        if request_t is None:
+            request_t = dispatch_t if dispatch_t is not None else self.world.t
         self.log(
             DEPARTURE,
             origin=origin,
@@ -375,18 +430,26 @@ class Pilot:
             purpose=purpose,
             flight_id=str(plan.flight_id),
             path=list(path),
+            request_t=round(request_t, 6),
+            ground_delay_s=round(max(0.0, self.world.t - request_t), 6),
+            **predicted,
         )
         return True
 
-    def _path_fits(self, path: list[str]) -> bool:
-        ac = self.ac
-        energy_cfg = self.cfg.energy if self.cfg.world.energy else None
-        if energy_cfg is None:
-            return fits(ac, self.network.route_length_m(path))
-        from aerolink.sim.energy import trip_energy_estimate
+    @staticmethod
+    def _prediction(option) -> dict:
+        """What the advisor told the pilot at departure: the arrival time it expects (cruise ETA plus
+        the waits it predicts) and the window around it, so ETA error and coverage can be scored."""
+        wait = float(getattr(option, "predicted_pad_wait_s", 0.0) + getattr(option, "predicted_junction_wait_s", 0.0))
+        lo, hi = option.eta_window_s
+        return {
+            "predicted_arrival_s": round(float(option.eta_s) + wait, 6),
+            "predicted_cruise_arrival_s": round(float(option.eta_s), 6),  # the ETA alone, without predicted waits
+            "predicted_window_s": [round(float(lo) + wait, 6), round(float(hi) + wait, 6)],
+        }
 
-        trip = trip_energy_estimate(self.network, path, ac.vehicle_type, energy_cfg)
-        return trip <= ac.battery_soc - energy_cfg.reserve_soc + 1e-9
+    def _path_fits(self, path: list[str]) -> bool:
+        return path_fits(self.network, self.ac, path, self.cfg.energy if self.cfg.world.energy else None)
 
     def _route_fits(self, route_m: float) -> bool:
         energy_cfg = self.cfg.world.energy
@@ -510,6 +573,7 @@ class Pilot:
             data["eta_error_s"] = round(self.world.t - plan.departure_time - ac.predicted_total_s, 6)
             data["predicted_total_s"] = round(ac.predicted_total_s, 6)
         self.log(ARRIVAL, **data)
+        ac.low_energy_emergency = False
         ac.active_flight = None
         ac.legs = []
         ac.leg_index = 0
@@ -548,8 +612,8 @@ class Pilot:
             from aerolink.sim.energy import nearest_alternate_energy
 
             needed = nearest_alternate_energy(self.network, ac, energy_cfg)
-            if ac.battery_soc - needed <= energy_cfg.reserve_soc + 1e-9:
-                self.divert_energy_reserve()
+            if ac.low_energy_emergency or ac.battery_soc - needed <= energy_cfg.reserve_soc + 1e-9:
+                self._low_energy_emergency()
                 return
         if self.separation and ac.pad_requested and not ac.pad_cleared:
             plan = ac.active_flight
@@ -564,90 +628,65 @@ class Pilot:
         if held >= self.cfg.max_hold_s and (ac.retry_at_s is None or self.world.t >= ac.retry_at_s):
             self.divert()
 
-    def divert_energy_reserve(self) -> None:
-        """Diversion triggered specifically by an energy reserve violation.
-
-        Unlike :meth:`divert` this does not require a current flight plan; it
-        picks the nearest alternate site that is reachable and can be landed on.
-        """
+    def _emergency_alternate(self) -> tuple[float, str, list[str]] | None:
+        """Nearest other site with a free pad slot that the remaining charge reaches by turning back
+        along the current leg (no reserve: this is an emergency). Returns (SOC needed, site, path from
+        the leg's start node)."""
         ac = self.ac
-
-        energy_cfg = self.cfg.energy
         leg = ac.leg
-        if leg is None:
-            # No route context: use current node if at a site, otherwise hold.
-            if ac.current_node is not None and self.network.nodes[ac.current_node].get("kind") != "waypoint":
-                ac.status = "landing"
-            return
-
-        sites = self.network.nodes_for(ac.vehicle_type)
-        candidates: list[tuple[float, str, list[str]]] = []
-        dist_back = ac.distance_along_edge_m
-        dist_forward = leg.length_m - ac.distance_along_edge_m
-        for site in sites:
-            d_start = self.network.route_distance_m(leg.start_node, site, ac.vehicle_type)
-            d_end = self.network.route_distance_m(leg.end_node, site, ac.vehicle_type)
-            options: list[tuple[float, list[str]]] = []
-            if d_start is not None:
-                start_paths = self.network.shortest_paths(leg.start_node, site, ac.vehicle_type, k=1)
-                if start_paths:
-                    options.append((dist_back + d_start, start_paths[0]))
-            if d_end is not None:
-                end_paths = self.network.shortest_paths(leg.end_node, site, ac.vehicle_type, k=1)
-                if end_paths:
-                    options.append((dist_forward + d_end, end_paths[0]))
-            for ground, path in options:
-                if len(path) < 2:
+        plan = ac.active_flight
+        if leg is None or plan is None:
+            return None
+        vehicle = vehicle_cfg(ac.vehicle_type)
+        back_node, back_m = leg.start_node, ac.distance_along_edge_m
+        best: tuple[float, str, list[str]] | None = None
+        for site in sorted(self.network.nodes_for(ac.vehicle_type)):
+            if site == plan.destination_node or not self.world.pads[site].has_free_slot():
+                continue
+            if site == back_node:
+                path = [back_node]
+            else:
+                paths = self.network.shortest_paths(back_node, site, vehicle_type=ac.vehicle_type, k=1)
+                if not paths:
                     continue
-                from aerolink.sim.energy import trip_energy_estimate
+                path = paths[0]
+            ground = back_m + self.network.route_length_m(path)
+            if ground * vehicle.cruise_soc_per_m + vehicle.transition_soc > ac.battery_soc:
+                continue  # out of reach on what is left
+            if best is None or ground < best[0]:
+                best = (ground, site, path)
+        if best is None:
+            return None
+        ground, site, path = best
+        return ground * vehicle.cruise_soc_per_m + vehicle.transition_soc, site, path
 
-                trip = trip_energy_estimate(self.network, path, ac.vehicle_type, energy_cfg)
-                if trip <= ac.battery_soc - energy_cfg.reserve_soc + 1e-9:
-                    candidates.append((ground, site, path))
+    def _low_energy_emergency(self) -> None:
+        """A holding aircraft has reached its energy reserve (ARCHITECTURE section 9.1 world rules).
 
-        if not candidates:
-            self.log(DIVERSION_UNAVAILABLE)
-            ac.retry_at_s = self.world.t + ROUTE_RETRY_S
-            return
-
-        candidates.sort(key=lambda x: x[0])
-        _, _, path = candidates[0]
-        self._divert_depart(path)
-
-    def _divert_depart(self, path: list[str]) -> None:
-        """Begin a diversion from the current holding position to ``path``."""
+        It declares an emergency once. From then on it is first in the destination queue (the operator
+        grants it the next free slot, and asks an idle parked aircraft to leave a full pad). If no slot
+        opens before the charge is down to what the nearest site with a free pad needs (plus a small
+        margin), it diverts there. It never hovers on down to zero."""
         ac = self.ac
-        self.cancel_pad_request()
-        speed = vehicle_cfg(ac.vehicle_type).cruise_speed_mps
-        legs = self._legs(path, speed)
-        plan = FlightPlan(
-            flight_id=seeded_uuid(self.world.rng),
-            request_id=seeded_uuid(self.world.rng),
-            route_id=seeded_uuid(self.world.rng),
-            path=list(path),
-            destination_node=path[-1],
-            departure_time=self.world.t,
-            eta_by_node=self._etas(legs, self.world.t),
-            purpose="reposition",
-            destination_change_at=None,
-            dispatch_t=None,
-            flown=[],
-            diverted=True,
-            revision=1,
-        )
-        ac.active_flight = plan
-        ac.legs = legs
-        ac.leg_index = 0
-        ac.distance_along_edge_m = 0.0
-        ac.velocity_mps = 0.0
-        ac.vertical_speed_mps = 0.0
-        ac.status = "climbing"
-        ac.current_node = None
-        ac.pad_requested = False
-        ac.pad_cleared = False
-        ac.hold_remaining_m = 0.0
-        self.world.planned.append(plan)
-        self.log(DIVERSION, from_node=path[0], to_node=path[-1], flight_id=str(plan.flight_id))
+        plan = ac.active_flight
+        vehicle = vehicle_cfg(ac.vehicle_type)
+        alternate = self._emergency_alternate()
+        if not ac.low_energy_emergency:
+            ac.low_energy_emergency = True
+            self.log(
+                LOW_ENERGY_EMERGENCY,
+                node=plan.destination_node if plan else None,
+                soc=round(ac.battery_soc, 6),
+                alternate=alternate[1] if alternate else None,
+            )
+            if alternate is None:
+                self.log(DIVERSION_UNAVAILABLE)
+        if alternate is None:
+            return
+        need, site, path = alternate
+        next_step_soc = ac.battery_soc - vehicle.hover_soc_per_s * self.cfg.dt_s
+        if next_step_soc <= need + EMERGENCY_MARGIN_SOC:
+            self._turn_back(site, path)
 
     def divert(self) -> None:
         """Turn back along the current leg and fly to the nearest other site with a
@@ -702,6 +741,17 @@ class Pilot:
             return
         ac.retry_at_s = None
         _, site, path = best
+        self._turn_back(site, path)
+
+    def _turn_back(self, site: str, path: list[str]) -> None:
+        """Turn around on the current leg and fly back to its start node, then ``path`` to ``site``
+        (``path`` starts at that node; ``[node]`` alone when the node is the site)."""
+        ac = self.ac
+        plan = ac.active_flight
+        assert plan is not None and ac.leg is not None
+        old_dest = plan.destination_node
+        leg = ac.leg
+        back_node = leg.start_node
         self.cancel_pad()
         back = FlightLeg(
             edge=leg.edge,
@@ -743,10 +793,15 @@ class Pilot:
             if new is not None:
                 return new
         path = self.advisor.suggest(self.ac, node, self.world.t)
-        if path is None or not fits(self.ac, self.network.route_length_m(path)) or self._u_turn(path):
+        # same reachability rule as departures (reserve included), not the bare range check
+        if path is None or not self._path_fits(path) or self._u_turn(path):
             return None
         accepted = bool(self.ac.rng.random() < self.cfg.suggestion_acceptance_rate)
-        self.log(SUGGESTION, node=node, path=list(path), accepted=accepted)
+        extra = {}
+        gain = getattr(self.advisor, "last_gain_s", None)  # advisor's own predicted saving, if it has one
+        if gain is not None:
+            extra["predicted_gain_s"] = round(float(gain), 6)
+        self.log(SUGGESTION, node=node, path=list(path), accepted=accepted, **extra)
         if not accepted:
             return None
         plan.accepted_suggestion = True

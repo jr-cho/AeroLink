@@ -15,6 +15,7 @@ import numpy as np
 
 from aerolink.network import Network
 from aerolink.sim.state import AircraftState, WorldState
+from aerolink.sim.world_config import EnergyConfig
 
 
 @dataclass(frozen=True)
@@ -187,7 +188,9 @@ def choose_incident_site(world: WorldState, network: Network, rng: np.random.Gen
     return candidates[int(rng.integers(len(candidates)))]
 
 
-def find_nearest_idle_medical_aircraft(world: WorldState, node_id: str, network: Network) -> str | None:
+def find_nearest_idle_medical_aircraft(
+    world: WorldState, node_id: str, network: Network, energy_cfg: EnergyConfig | None = None
+) -> str | None:
     """The parked, unassigned medical aircraft with the shortest route to ``node_id``.
 
     Ties break on aircraft id. Aircraft that cannot reach ``node_id`` within
@@ -200,7 +203,7 @@ def find_nearest_idle_medical_aircraft(world: WorldState, node_id: str, network:
             continue
         if ac.current_node is None:
             continue
-        if not can_serve_incident(network, ac, node_id):
+        if not can_serve_incident(network, ac, node_id, energy_cfg):
             continue
         dist = network.route_distance_m(ac.current_node, node_id, "medical")
         assert dist is not None

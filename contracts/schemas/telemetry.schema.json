@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://aerolink.dev/schemas/telemetry.schema.json",
   "title": "Telemetry",
-  "description": "1 Hz position report from an aircraft (device or simulator).",
+  "description": "1 Hz position report from an aircraft (device or simulator). Schema version 4.0, or 4.1 when it carries the optional callsign.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -18,7 +18,10 @@
   ],
   "properties": {
     "schema_version": {
-      "$ref": "common.schema.json#/$defs/schema_version"
+      "enum": [
+        "4.0",
+        "4.1"
+      ]
     },
     "message_id": {
       "$ref": "common.schema.json#/$defs/uuid"
@@ -116,6 +119,11 @@
           "type": "null"
         }
       ]
+    },
+    "callsign": {
+      "type": "string",
+      "pattern": "^[A-Z0-9-]{2,10}$",
+      "description": "Optional (v4.1): the unit's radio callsign. The registry's callsign wins when they differ."
     }
   }
 }

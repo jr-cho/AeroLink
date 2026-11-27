@@ -285,6 +285,8 @@ def advance(
         ac.status = "climbing"
     elif ac.vertical_speed_mps < -0.05:
         ac.status = "descending"
+    elif ac.altitude_hold and alt1 <= PAD_ALT_M + 1e-6 and ac.status == "climbing":
+        ac.status = "climbing"  # a takeoff whose climb separation is holding is still taking off, not cruising
     else:
         ac.status = "cruise"
     return StepResult(passed, at_stop, travel)

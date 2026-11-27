@@ -1,7 +1,13 @@
 """Shared helpers: schema registry and example loading."""
 
 import json
-from pathlib import Path
+import os
+
+# Torch (Chronos) and LightGBM each ship their own OpenMP runtime; on macOS loading both in one process segfaults or
+# hangs unless OpenMP is single-threaded. Set before any test imports either library (found in E1b).
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+
+from pathlib import Path  # noqa: E402
 from typing import Any
 
 from jsonschema import Draft202012Validator
@@ -11,6 +17,32 @@ from referencing import Registry, Resource
 REPO = Path(__file__).resolve().parents[2]
 SCHEMAS = REPO / "contracts" / "schemas"
 EXAMPLES = REPO / "contracts" / "examples"
+
+
+def need[T](x: T | None) -> T:
+    """Narrow Optional to T for tests that expect a hit (a bare `assert` message-free failure otherwise)."""
+    assert x is not None
+    return x
+
+
+def grab(pattern: str, text: str, group: int = 1) -> str:
+    """`re.search(...).group(n)` that fails the test with a clear message when there is no match."""
+    import re
+
+    m = re.search(pattern, text)
+    assert m is not None, f"{pattern!r} not found in {text!r}"
+    return m.group(group)
+
+
+def portal_of(c: Any) -> Any:
+    """The TestClient's anyio portal; non-None inside `with TestClient(app)` (typed so ty accepts `.call`)."""
+    assert c.portal is not None, "TestClient must be used as a context manager"
+    return c.portal
+
+
+def app_state(c: Any) -> Any:
+    """`c.app.state` (starlette State); `TestClient.app` is typed as a bare ASGI callable."""
+    return c.app.state
 
 
 def load(path: Path) -> dict:

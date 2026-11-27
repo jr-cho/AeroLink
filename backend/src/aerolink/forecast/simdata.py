@@ -16,7 +16,6 @@ import math
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import cast
 
 import numpy as np
 
@@ -26,6 +25,7 @@ from aerolink.forecast.features import (
     HISTORY_S,
     POSITION_HORIZONS_S,
     cv_speed,
+    eta_query_row,
     eta_row,
     to_local,
 )
@@ -141,7 +141,7 @@ def _tracks(result: SimulationResult) -> dict[str, dict[str, np.ndarray]]:
     return out
 
 
-def _vehicle(result: SimulationResult, aid: str) -> str | None:
+def _vehicle(result: SimulationResult, aid: str) -> VehicleType | None:
     ac = result.final_world.aircraft.get(aid)
     return ac.vehicle_type if ac is not None else None
 
@@ -211,27 +211,54 @@ def position_samples(
     return samples, rows["graph"]
 
 
-def eta_samples(results: list[SimulationResult], network: Network, stride_s: int = 30) -> EtaSamples:
-    """ETA samples from every completed, undiverted simulated flight."""
+def eta_samples(
+    results: list[SimulationResult], network: Network, stride_s: int = 30, departures: bool = True
+) -> EtaSamples:
+    """ETA samples from every completed, undiverted simulated flight.
+
+    Mid-flight samples (observed speed, every ``stride_s`` s) plus, if ``departures``, one
+    departure sample per flight: the query the route engine makes at the departure step
+    (no observed speed, cruise assumed), whose target is the actual touchdown time. The
+    route engine only ever asks at departure, so a model trained on mid-flight samples
+    alone would be optimistic there (it never saw the take-off, climb-out and metering).
+    """
     X, y, cv_s, act_s, grp = [], [], [], [], []
     for res in results:
         tracks = _tracks(res)
         paths = _path_history(res)
         h0 = _start_hour(res)
-        departures = {e["flight_id"]: e for e in res.events if e["kind"] == "departure"}
+        dep_by_id = {e["flight_id"]: e for e in res.events if e["kind"] == "departure"}
         active: list[tuple[float, float, str]] = []  # (dep t, arr t, aircraft) for traffic-ahead
-        arrivals = [e for e in res.events if e["kind"] == "arrival" and e.get("flight_id") in departures]
+        arrivals = [e for e in res.events if e["kind"] == "arrival" and e.get("flight_id") in dep_by_id]
         for arr in arrivals:
-            active.append((departures[arr["flight_id"]]["t"], arr["t"], arr["aircraft_id"]))
+            active.append((dep_by_id[arr["flight_id"]]["t"], arr["t"], arr["aircraft_id"]))
         for arr in arrivals:
             if arr.get("diverted") or arr.get("destination_changed"):
                 continue
-            dep = departures[arr["flight_id"]]
+            dep = dep_by_id[arr["flight_id"]]
             aid, vehicle = arr["aircraft_id"], _vehicle(res, arr["aircraft_id"])
             if vehicle is None:
                 continue
-            cruise = vehicle_cfg(cast(VehicleType, vehicle)).cruise_speed_mps
+            cruise = vehicle_cfg(vehicle).cruise_speed_mps
             tr = tracks[aid]
+            if departures:
+                path0 = list(dep["path"])
+                t0 = float(dep["t"])
+                traffic0 = 0
+                for d_t, a_t, other in active:
+                    if other == aid or not (d_t <= t0 < a_t):
+                        continue
+                    op = _path_at(paths.get(other, []), t0)
+                    if op and set(op) & set(path0[1:]):
+                        traffic0 += 1
+                row, speed0 = eta_query_row(network, path0, vehicle, (h0 + t0 / 3600.0) % 24.0, float(traffic0))
+                cv0 = network.route_length_m(path0) / max(1.0, speed0)
+                actual0 = max(1.0, float(arr["t"]) - t0)
+                X.append(row)
+                y.append(math.log(actual0 / max(1.0, cv0)))
+                cv_s.append(cv0)
+                act_s.append(actual0)
+                grp.append(f"{res.scenario.name}-{res.seed}-{arr['flight_id']}")
             in_flight = (tr["t"] > dep["t"]) & (tr["t"] <= arr["t"])
             at_site = np.flatnonzero(in_flight & np.isin(tr["status"], list(AT_SITE)))
             reach_t = float(tr["t"][at_site[0]]) if len(at_site) else float(arr["t"])
@@ -277,3 +304,8 @@ def eta_samples(results: list[SimulationResult], network: Network, stride_s: int
         np.array(act_s),
         np.array(grp, dtype=str),
     )
+
+
+def departure_mask(X: np.ndarray) -> np.ndarray:
+    """True for the departure-query rows of an ETA feature matrix."""
+    return X[:, ETA_FEATURES.index("from_rest")] > 0.5

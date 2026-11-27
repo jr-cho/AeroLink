@@ -40,3 +40,24 @@ def test_run_one_and_table(fl_network: Network, tmp_path: Path):
     doc.write_text(f"before\n{START}\nstale table\n{END}\nafter\n")
     assert update_docs(table, doc)
     assert "stale table" not in doc.read_text() and "| A1 |" in doc.read_text() and doc.read_text().endswith("after\n")
+
+
+def test_table_carries_the_e1_metrics(fl_network: Network):
+    row = run_one(fl_network, BACKEND / "scenarios" / "nominal_day.yaml", "A1", 42, gbm=None, demand=None)
+    for key in (
+        "door_to_door_mean_s",
+        "door_to_door_p95_s",
+        "ground_delay_mean_s",
+        "eta_error_mean_s",
+        "eta_error_p90_s",
+        "eta_covered",
+        "suggestions_offered",
+        "suggestion_predicted_saving_s",
+        "schedule_conflicts",
+    ):
+        assert key in row
+    # door-to-door includes the ground delay, so it can't be shorter than the flight
+    assert row["door_to_door_mean_s"] >= row["trip_time_mean_s"] - 1e-6
+    (summary,) = summarize([row])
+    table = markdown([summary], None, 1)
+    assert "Door-to-door" in table and "Window coverage" in table and "ETA error" in table

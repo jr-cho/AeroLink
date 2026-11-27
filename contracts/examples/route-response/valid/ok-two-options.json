@@ -55,6 +55,20 @@
           -82.4595,
           300.0
         ]
+      ],
+      "segments": [
+        {
+          "from": "wp-origin",
+          "to": "wp-lakeland",
+          "eta_s": 1794927840.0,
+          "level": "moderate"
+        },
+        {
+          "from": "wp-lakeland",
+          "to": "hp-61fl",
+          "eta_s": 1794928740.0,
+          "level": "moderate"
+        }
       ]
     },
     {
@@ -98,6 +112,20 @@
           -82.4595,
           300.0
         ]
+      ],
+      "segments": [
+        {
+          "from": "wp-origin",
+          "to": "wp-lakeland",
+          "eta_s": 1794927840.0,
+          "level": "low"
+        },
+        {
+          "from": "wp-lakeland",
+          "to": "hp-61fl",
+          "eta_s": 1794928740.0,
+          "level": "low"
+        }
       ]
     }
   ]

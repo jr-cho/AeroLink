@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aerolink.dev/schemas/health.schema.json",
+  "title": "Health",
+  "description": "Unit health heartbeat, every 10 s (contract v4.1, additive: v4.0 messages are unchanged). Topic aerolink/aircraft/{id}/health or aerolink/sim/{id}/health.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "message_id",
+    "aircraft_id",
+    "timestamp",
+    "uptime_s",
+    "reset_reason",
+    "wifi_rssi_dbm",
+    "gnss",
+    "free_heap_bytes",
+    "firmware_version"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "4.1"
+    },
+    "message_id": {
+      "$ref": "common.schema.json#/$defs/uuid"
+    },
+    "aircraft_id": {
+      "$ref": "common.schema.json#/$defs/aircraft_id"
+    },
+    "timestamp": {
+      "$ref": "common.schema.json#/$defs/timestamp"
+    },
+    "uptime_s": {
+      "type": "number",
+      "minimum": 0
+    },
+    "reset_reason": {
+      "description": "Why the unit last restarted, e.g. power_on, software, watchdog, brownout, panic, deep_sleep, external.",
+      "type": "string",
+      "pattern": "^[a-z0-9_]{1,32}$"
+    },
+    "wifi_rssi_dbm": {
+      "type": "integer",
+      "minimum": -127,
+      "maximum": 0
+    },
+    "gnss": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fix",
+        "satellites",
+        "hdop"
+      ],
+      "properties": {
+        "fix": {
+          "enum": [
+            "none",
+            "2d",
+            "3d"
+          ]
+        },
+        "satellites": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 64
+        },
+        "hdop": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "free_heap_bytes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "firmware_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32
+    },
+    "supply_mv": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 60000
+    }
+  }
+}

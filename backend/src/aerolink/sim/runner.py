@@ -77,6 +77,7 @@ def build_world(network: Network, scenario: Scenario, seed: int) -> WorldState:
         rng,
         passenger=scenario.fleet.get("passenger", 0),
         medical=scenario.fleet.get("medical", 0),
+        staged=scenario.fleet_staging,
     )
     wind = WindField(
         speed_mps=scenario.wind.speed_mps,
@@ -131,6 +132,7 @@ def run_simulation(
         energy=scenario.energy,
         pad_booking=scenario.pad_booking,
         schedule=scenario.schedule,
+        medical_incidents=scenario.medical_incidents,
         background_traffic=scenario.background_traffic,
     )
     controller = Controller(

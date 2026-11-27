@@ -64,3 +64,41 @@ def test_gbm_forecaster_predicts_ordered_quantiles(trained, fl_network: Network)
     track = [(28.0 + i * 1e-4, -82.0, 300.0) for i in range(60)]
     for p in f.predict_position(track, 0.0, "passenger", [30, 120]):
         assert p.east_p10 <= p.east_p50 <= p.east_p90 and p.north_p10 <= p.north_p50 <= p.north_p90
+
+
+def test_departure_samples_use_the_serving_feature_row(fl_network: Network):
+    """The departure training rows are built by the same function the route engine's ETA call uses."""
+    from aerolink.forecast.features import ETA_FEATURES, eta_query_row
+    from aerolink.forecast.simdata import departure_mask, eta_samples
+    from aerolink.sim import load_scenario, run_simulation
+
+    res = run_simulation(fl_network, load_scenario(BACKEND / "scenarios" / "nominal_day.yaml"), seed=1)
+    data = eta_samples([res], fl_network)
+    dep = departure_mask(data.X)
+    assert dep.sum() >= 1 and (~dep).sum() > dep.sum()
+    departures = [e for e in res.events if e["kind"] == "departure"]
+    traffic = ETA_FEATURES.index("traffic_ahead")
+    hour = ETA_FEATURES.index("hour")
+    matched = 0
+    for row in data.X[dep]:
+        for e in departures:
+            veh = res.final_world.aircraft[e["aircraft_id"]].vehicle_type
+            want, _ = eta_query_row(fl_network, list(e["path"]), veh, row[hour], row[traffic])
+            if np.allclose(want, row, equal_nan=True):
+                matched += 1
+                break
+    assert matched == int(dep.sum())
+    assert (data.X[dep][:, ETA_FEATURES.index("from_rest")] == 1).all()
+    assert (data.X[~dep][:, ETA_FEATURES.index("from_rest")] == 0).all()
+
+
+def test_departure_eta_coverage_on_held_out_seeds():
+    """The committed training report: p10-p90 at departure, on held-out simulation seeds, is near 80%."""
+    report = BACKEND / "eval-results" / "aerolink-gbm-e5.3.json"
+    if not report.exists():
+        pytest.skip("run `python -m aerolink.forecast.train_gbm --with-chronos` first")
+    dep = json.loads(report.read_text()).get("eta_departure_sim_held_out")
+    if not dep:
+        pytest.skip("report predates the departure ETA samples")
+    assert dep["n"] >= 100
+    assert 0.70 <= dep["gbm_coverage"] <= 0.88

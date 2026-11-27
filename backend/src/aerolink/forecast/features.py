@@ -16,6 +16,8 @@ import math
 
 import numpy as np
 
+from aerolink.contracts import VehicleType
+
 EARTH_R_M = 6_371_008.8
 POSITION_HORIZONS_S = [30, 60, 120, 300]
 HISTORY_S = 60  # seconds of 1 Hz history a position sample carries
@@ -175,12 +177,13 @@ ETA_FEATURES = [
     "speed_ratio",
     "nodes_left",
     "merges_left",
+    "from_rest",  # 1 = a departure query (no observed speed yet), 0 = an in-flight one
     "traffic_ahead",
 ]
 
 
 def eta_row(
-    vehicle: str,
+    vehicle: VehicleType,
     hour: float | None,
     remaining_m: float,
     cv_remaining_s: float,
@@ -189,6 +192,7 @@ def eta_row(
     nodes_left: int,
     merges_left: int,
     traffic_ahead: float,
+    from_rest: bool = False,
 ) -> list[float]:
     values = {
         "vehicle": VEHICLE_CODE.get(vehicle, math.nan),
@@ -199,6 +203,7 @@ def eta_row(
         "speed_ratio": speed_mps / max(1.0, cruise_mps),
         "nodes_left": float(nodes_left),
         "merges_left": float(merges_left),
+        "from_rest": 1.0 if from_rest else 0.0,
         "traffic_ahead": traffic_ahead,
     }
     return [values[f] for f in ETA_FEATURES]
@@ -209,3 +214,40 @@ def cv_speed(cruise_mps: float, current_speed_mps: float | None) -> float:
     if current_speed_mps is not None and current_speed_mps > 1.0:
         return 0.5 * (cruise_mps + current_speed_mps)
     return cruise_mps
+
+
+def eta_query_row(
+    network,
+    path: list[str],
+    vehicle: VehicleType,
+    hour: float | None,
+    traffic_ahead: float,
+    current_speed_mps: float | None = None,
+) -> tuple[list[float], float]:
+    """The ETA feature row for a whole-path query, and the speed the CV time assumes.
+
+    One function for serving (``GBMForecaster.predict_eta``) and for training the
+    departure samples, so the two cannot drift apart. With no observed speed this is a
+    departure query: cruise speed is assumed and ``from_rest`` is set, because the real
+    flight then also pays for accelerating from rest, climb-out, speed caps and metering.
+    """
+    from aerolink.vehicle import vehicle_cfg
+
+    cruise = vehicle_cfg(vehicle).cruise_speed_mps
+    moving = current_speed_mps is not None and current_speed_mps > 1.0
+    speed = cv_speed(cruise, current_speed_mps)
+    total_m = network.route_length_m(path)
+    merges = sum(network.graph.degree(n) >= 3 for n in path[1:-1])
+    row = eta_row(
+        vehicle,
+        hour,
+        total_m,
+        total_m / max(1.0, speed),
+        current_speed_mps if moving else cruise,
+        cruise,
+        len(path),
+        merges,
+        traffic_ahead,
+        from_rest=not moving,
+    )
+    return row, speed
