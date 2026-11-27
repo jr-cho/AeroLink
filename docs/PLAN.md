@@ -2,11 +2,13 @@
 
 Milestones, epics, and acceptance criteria. Design: [ARCHITECTURE](ARCHITECTURE.md). Overview: [README](../README.md).
 
-**Product:** a navigation app for Florida's low-altitude air corridors with AI traffic prediction (ARCHITECTURE §1). The backend's route engine uses traffic-management calculations to make its predictions; it never approves, rejects, or holds a flight.
+**Product:** a navigation app for Florida's low-altitude air corridors with AI traffic prediction (ARCHITECTURE §1). The backend's route engine uses traffic-management calculations to make its predictions; it never approves, rejects, or holds a flight. Air traffic control stays in the loop by radio (ARCHITECTURE §1, §13.4).
 
 **Reuse first:** the [decisions table](ARCHITECTURE.md#17-decisions) picks off-the-shelf tools wherever they exist. Stories name them; custom code is limited to the route engine, the corridor network, the simulator, off-route detection, and the adsb.lol parser.
 
-**Stack:** all Python for the backend (ARCHITECTURE §11), TypeScript for the web map, C for the firmware.
+**Stack:** all Python for the backend (ARCHITECTURE §11), TypeScript for the web map and pilot screen, C for the unit's firmware.
+
+**Device:** a screenless AeroLink unit (vehicle-type key, GNSS, button, LEDs) plus any screen the pilot already has, paired by QR code (ARCHITECTURE §14). A Display Pack with its own touchscreen is post-MVP.
 
 **How to read this**
 - **Milestone:** a checkpoint that produces something working and demonstrable. Closed only when its exit criteria are met.
@@ -24,9 +26,9 @@ Milestones, epics, and acceptance criteria. Design: [ARCHITECTURE](ARCHITECTURE.
 | M3 | Simulator and Classical Baseline | A measurable non-AI navigation baseline running in simulation | M2 |
 | M4 | AI Forecasting and Route Engine | AeroLink's AI route engine measured against the baseline | M3 |
 | M5 | Real Data and Trained Models | Trained models, real-data validation, full ablation results | M4 |
-| M6 | Live System and Web Map | The full system running live with a usable web map and shared basemap | M4, M5 |
-| M7 | Device Hardware Design | A reviewed wiring schematic and datasheets for the device | — |
-| M8 | Device | A handheld navigation device with a pannable map running the full flow | M6, M7 |
+| M6 | Live System and Web Map | The full system running live with a usable web map, the pilot screen, the AeroLink Ops dashboard, and the shared basemap | M4, M5 |
+| M7 | Unit Hardware Design | A reviewed wiring schematic and datasheets for the AeroLink unit | — |
+| M8 | Unit and Pilot Screen | The AeroLink unit running the full flow with a paired phone | M6, M7 |
 | M9 | Deploy and Demo | The system deployed and the demo rehearsed | M8 |
 
 ```mermaid
@@ -118,7 +120,7 @@ Find and map the real landing sites for both site types (ARCHITECTURE §3.2). Ae
 - [x] Confirm current hospital names
 - [x] Check every position on aerial imagery; mark `verified`
 - [x] Copy the sites into the `nodes:` section of `airspace/network.yaml` (5 surveyed eVTOL sites + SunTrax, 22 helipads) with a connector each; remove the placeholder hospitals
-- [x] Add a downtown Tampa waypoint (I-4/I-275) for Tampa General, Water Street, and the EMS pad
+- [x] Add a downtown Tampa waypoint (I-4/I-275) for Tampa General, Water Street (modelled site), and the EMS pad
 
 **Acceptance criteria**
 - Every site has a type, position, source, and verified flag
@@ -434,11 +436,13 @@ A model trained on simulated and real Central Florida data.
 - [x] Train both heads on simulated data plus the real training days
 - [x] Calibrate the intervals with MAPIE `ConformalizedQuantileRegressor`; report measured p10–p90 coverage against the 80% target
 - [x] Version the model files with their training seeds
+- [x] Departure-time ETA: a `from_rest` feature (1 for a departure query, 0 in flight) and departure samples in the training data; the conformal calibration is done separately for departure and in-flight queries, so the 80% target holds where routes ask (at departure)
 
 **Files** (under `backend/`): `forecast/features.py`, `forecast/simdata.py`, `forecast/gbm.py`, `forecast/train_gbm.py`, `models/aerolink-gbm/`, `eval-results/aerolink-gbm-e5.3.json`
 
 **Acceptance criteria**
 - Results reported against `cv` and `chronos` on both simulated and real held-out data
+- Departure-time window coverage is reported separately from in-flight coverage (`eta_departure_sim_held_out` in `aerolink-gbm-e5.3.json`)
 
 ### E5.4 Demand Forecaster
 
@@ -475,7 +479,7 @@ Detect aircraft leaving their predicted path, using learned tolerance instead of
 Plain-language summary of the route options, like a maps app.
 
 **Stories**
-- [x] Call OpenRouter (`LLM_BASE_URL`, `LLM_MODEL`, `LLM_API_KEY`) to generate a two-sentence summary from the structured route data
+- [x] Call an OpenAI-compatible chat endpoint (`LLM_BASE_URL`, `LLM_MODEL`, `LLM_API_KEY`, `LLM_REASONING_EFFORT`; measured against a self-hosted Ollama server, OpenRouter also works) to generate a two-sentence summary from the structured route data
 - [x] Reject any summary whose numbers don't match the data; fall back to a template
 
 **Files** (under `backend/`): `summary/llm.py`, `summary/evaluate.py`, `eval-results/summary-e5.6.json`
@@ -492,27 +496,30 @@ Measure what each AI component adds.
 - [x] Run configurations A2–A5 across all scenarios
 - [x] Run A5 with a 50% suggestion acceptance rate as a sensitivity check
 - [x] Publish the B1 vs A5 comparison
+- [x] Add congestion scenarios whose premises come from the FDOT AAM plan's own demand range (`fdot_high_peak`, `i4_corridor_rush`, `orlando_event_egress`; each YAML states its premise and parameters, fixed before any comparison run)
+- [x] Measure ETA error and window coverage at departure, with ground holds counted in the trip time
 
 **Files** (under `backend/`): `routing/aerolink.py`, `eval/ablations.py`, `eval-results/m5-ablations.json` and `.md`
 
 **Acceptance criteria**
 - The ablation table in ARCHITECTURE §9.3 is fully populated from committed runs
+- Results are reported as measured: no parameter is tuned to favour AeroLink (on this network A5 and B1 produce the same routes and outcomes; see ARCHITECTURE §9.3)
 
 ---
 
 ## M6: Live System and Web Map
 
-**Goal:** The full system running in real time, with a usable web map and the basemap shared with the device.
-**Exit criteria:** 10 live aircraft on the web map with a traffic layer; the method toggle visibly changes route options; directions return in under 2 s; a medical dispatch updates other aircraft's predictions and triggers suggestions.
+**Goal:** The full system running in real time, with a usable web map, the pilot screen, the AeroLink Ops dashboard, and the shared basemap.
+**Exit criteria:** the 10 simulated aircraft (the whole fleet, parked ones shown as on-ground tracks) on the web map with a traffic layer; the method toggle visibly changes route options; directions return in under 2 s; a medical dispatch updates other aircraft's predictions and triggers suggestions; the AeroLink Ops dashboard shows every active route, live ADS-B traffic, predicted congestion and conflicts, and every unit's health.
 
 ### E6.1 Live Integration of the Calculation Layer
 
 Run the same calculation functions the offline evaluation uses inside the live backend.
 
 **Stories**
-- [ ] Call the calculation layer from the service layer as plain functions (no separate service)
-- [ ] Run model inference in a worker thread so it never blocks MQTT ingest
-- [ ] Load models once at startup; expose versions at `/api/models`
+- [x] Call the calculation layer from the service layer as plain functions (no separate service)
+- [x] Run model inference in a worker thread so it never blocks MQTT ingest
+- [x] Load models once at startup; expose versions at `/api/models`
 
 **Acceptance criteria**
 - For the same input, the live backend returns the same options as the offline evaluation
@@ -523,9 +530,9 @@ Run the same calculation functions the offline evaluation uses inside the live b
 Secure messaging between aircraft and the backend.
 
 **Stories**
-- [ ] Configure Mosquitto (standard Docker image) with TLS and a project certificate authority
-- [ ] Per-device credentials via `password_file`; `acl_file` pattern rules limit each device to its own topics
-- [ ] Separate simulator namespace and account
+- [x] Configure Mosquitto (standard Docker image) with TLS and a project certificate authority
+- [x] Per-device credentials via `password_file`; `acl_file` pattern rules limit each device to its own topics
+- [x] Separate simulator namespace and account
 
 **Acceptance criteria**
 - A device cannot publish to another device's topics
@@ -536,66 +543,65 @@ Secure messaging between aircraft and the backend.
 The Python service layer (FastAPI + aiomqtt) that ingests telemetry, keeps planned flights, and runs the live loops.
 
 **Stories**
-- [ ] Ingest and validate telemetry; drop duplicates and out-of-order messages
-- [ ] Keep live aircraft state
-- [ ] Device registry: credential → vehicle type, `demo` flag; reject messages whose vehicle type doesn't match (except demo devices, whose changes are logged)
-- [ ] Keep the planned-flight registry and its statuses
-- [ ] Refresh forecasts every 10 s
-- [ ] Publish `traffic` to each device every 5 s (nearby aircraft, edges on or near its route)
-- [ ] Run en-route suggestions every 2 min
-- [ ] Handle the device flow: route request → route response → route selection → flight status
-- [ ] Database migrations (e.g. Alembic) and storage
-- [ ] Public API (ARCHITECTURE §11.1)
+- [x] Ingest and validate telemetry; drop duplicates and out-of-order messages
+- [x] Keep live aircraft state
+- [x] Device registry: credential → vehicle type, `demo` flag; reject messages whose vehicle type doesn't match (except demo devices, whose changes are logged)
+- [x] Keep the planned-flight registry and its statuses
+- [x] Refresh forecasts every 10 s
+- [x] Publish `traffic` to each device every 5 s (nearby aircraft, edges on or near its route)
+- [x] Run en-route suggestions every 2 min
+- [x] Handle the device flow: route request → route response → route selection → flight status
+- [x] Database migrations (e.g. Alembic) and storage
+- [x] Public API (ARCHITECTURE §11.1), including `/api/traffic`, `/api/forecaster`, `/api/models`, `/api/eval`, `/api/scenarios`, `/api/scenario` and `/api/adsb`
+- [x] Unit liveness watchdog: every inbound unit message (even telemetry with no fix) is a heartbeat; silent for more than 3 s → offline, routing locked. The Last Will alone fires only after 1.5 × the MQTT keepalive when a unit is unplugged
+- [x] Track segments *(from Microtransit_Tracking)*: start a new segment after a reconnect, a telemetry gap over 30 s, or a GNSS fix recovery; history and trails never join across segments; off-route detection restarts at a segment boundary
+- [x] Device event log *(from Microtransit_Tracking)*: persist online/offline (incl. no signal), GNSS fix gained/lost, vehicle-type changes and off-route; `GET /api/alerts`; pushed to `/ws/ops`, and online/offline and health changes also reach the unit's paired screens
+- [x] `scripts/fake_unit.py` *(from Microtransit_Tracking's payload simulator)*: a test unit (status + Last Will, 1 Hz telemetry, health heartbeat, replay, fault options such as no fix, weak signal or a silent drop, demo type toggle) for development and end-to-end tests
 
 **Acceptance criteria**
 - The full device flow works using a test MQTT client
 - A device registered as passenger cannot request medical routes
 - Restarting the backend loses no planned flights
+- A unit that goes silent without disconnecting (unplugged) shows offline within 5 s
 
 ### E6.4 Simulator Live Mode
 
 Run the simulated fleet in real time over MQTT.
 
 **Stories**
-- [ ] Publish telemetry and requests in real time
-- [ ] Switch scenarios from the API
+- [x] Publish telemetry in real time (offline run replayed on the wall clock; requests come with the Display Pack)
+- [x] Switch scenarios from the API (`PUT /api/scenario`, operator session)
 
 **Acceptance criteria**
 - Live and offline modes produce the same behaviour for the same seed
 
 ### E6.5 Basemap
 
-One basemap for the web and the device (ARCHITECTURE §13.3).
+One basemap for the web map and the pilot screen (ARCHITECTURE §13.3). Device raster tiles moved to the Display Pack (post-MVP).
 
 **Stories**
-- [ ] Extract Florida from a Protomaps basemap build with `pmtiles extract` (no account); keep it out of git; document the command
-- [ ] Serve the PMTiles file from Caddy; load it in MapLibre with the `pmtiles` protocol and a Protomaps style
-- [ ] `aerolink.tiles`: render raster tiles from the same file and style with TileServer GL (Docker, one-off): z5–z6 Florida, z7–z14 focus region
-- [ ] Convert the PNGs to LVGL RGB565 `.bin` tiles with the `0015/map_tiles` converter script
-- [ ] Export `network-device.json` (nodes, simplified edges, focus-region no-go outlines) from the network build
-- [ ] Write an SD-card image layout (`/tiles/…`, `/network-device.json`, a version file)
+- [x] Extract Florida from a Protomaps basemap build with `pmtiles extract` (no account); keep it out of git; document the command (`scripts/basemap.sh`)
+- [x] Serve the PMTiles file from Caddy; load it in MapLibre with the `pmtiles` protocol and a Protomaps style
 
 **Acceptance criteria**
-- The web map works with no third-party tile service
-- One command produces the SD-card contents; the tile count and size are reported
-- A device tile and the web map at the same place and zoom look the same
+- The web map and the pilot screen work with no third-party tile service
 
 ### E6.6 Web Map
 
 The maps-style web page for pilots, operators, and judges (ARCHITECTURE §13.1).
 
 **Stories**
-- [ ] MapLibre GL JS page on the shared basemap
-- [ ] Corridors, landing sites by type, and no-go airspace by type as 3D `fill-extrusion` layers
-- [ ] Traffic layer with a time slider (+0 to +45 min)
-- [ ] Live aircraft by vehicle type, with status
-- [ ] Directions: vehicle type + destination → route options with ETA ranges, reasons, and summary
-- [ ] Planned flights and prediction cones
-- [ ] Method toggle (classical / AeroLink) and forecaster toggle
-- [ ] Medical view
-- [ ] AI impact panel
-- [ ] Alerts and scenario control
-- [ ] Data attribution footer
+- [x] MapLibre GL JS page on the shared basemap
+- [x] Corridors, landing sites by type, and no-go airspace by type as 3D `fill-extrusion` layers
+- [x] Traffic layer with a time slider (+0 to +45 min)
+- [x] Live aircraft by vehicle type, with status and callsign; parked aircraft shown as grey on-ground dots
+- [x] Directions: vehicle type + destination → route options with ETA ranges, reasons, and summary
+- [x] Planned flights and prediction cones
+- [x] Method toggle (classical / AeroLink) and forecaster toggle (operator sign-in required to change them; signed-out viewers see them disabled with a sign-in line)
+- [x] Medical view
+- [x] AI impact panel
+- [x] Alerts and scenario control
+- [x] Data attribution footer
 
 **Acceptance criteria**
 - Every feature in ARCHITECTURE §13.1 is usable without the command line
@@ -605,28 +611,156 @@ The maps-style web page for pilots, operators, and judges (ARCHITECTURE §13.1).
 Run the whole system with one command.
 
 **Stories**
-- [ ] `compose.yaml` with five containers (`caddy`, `backend`, `mosquitto`, `postgres`, `sim`) and health checks
-- [ ] Caddy serves the built `web/` files and the PMTiles file and proxies `/api` to the backend
-- [ ] Caddy for HTTPS and basic auth
+- [x] `compose.yaml` with five containers (`caddy`, `backend`, `mosquitto`, `postgres`, `sim`) and health checks
+- [x] Caddy serves the built `web/` files and the PMTiles file and proxies `/api` to the backend
+- [x] Caddy for HTTPS and basic auth
 
 **Acceptance criteria**
 - `docker compose up` on a clean machine starts a working system
 
+### E6.8 Pilot Screen and Pairing
+
+The pilot's view of a paired AeroLink unit on any screen with a browser (ARCHITECTURE §11.2, §13.2, §14.5).
+
+**Stories**
+- [x] Pairing: pairing-code hash per unit (migration), `POST /api/devices/{id}/pair` → HTTP-only session cookie; re-provisioning rotates the code
+- [x] `GET /api/devices/{id}`: type, online, latest fix, current flight
+- [x] `POST /api/devices/{id}/route-request` and `/route-selection`, running the same handlers as the MQTT topics with the **registered** vehicle type
+- [x] WebSocket `/ws/devices/{id}`: push `route-response`, `flight-status`, `traffic`, type changes, `health`, `clearance` and online/offline to paired screens, with a heartbeat every 5 s (Caddy proxies it)
+- [x] Pilot page `/device/<id>` (MapLibre; look and layout in E6.12): map, "Where to?", route options, navigate, status
+- [x] "Unit not connected" state that locks routing while the unit is offline
+- [x] Screen wake lock while navigating; stale data greyed after `expires_at`
+- [x] QR label generator: `https://<site>/device/<id>?code=<code>` (`python -m aerolink.service.devices add` writes the SVG and PNG label)
+- [x] `POST /api/devices/{id}/flight/end`: the pilot ends the flight, so the shared picture and ATC see it as ended
+
+**Acceptance criteria**
+- A phone paired by QR completes the whole flow without instructions, with no site login: the pilot paths (`/device/*`, `/assets/*`, `/favicon.svg`, `/basemap/*`, `/api/airspace`, `/api/devices/*`, `/ws/devices/*`) are exempt from the Caddy basic auth; the pairing code and the per-unit session cookie protect them instead
+- A screen can't change or claim a vehicle type; requests use the unit's registered type
+- Unplugging the unit shows "Unit not connected" within 5 s and blocks new route requests
+- A demo-button press changes the screen's destination list within 2 s
+
 ---
 
-## M7: Device Hardware Design
+### E6.9 Health and Watchdogs
 
-**Goal:** A reviewed wiring schematic and parts documentation the device is built from.
+Know at all times whether every unit and every part of the server is healthy (ARCHITECTURE §11, §13.4).
+
+**Stories**
+- [x] Unit health heartbeat (contracts v4.1, `aerolink/aircraft/{id}/health`, every 10 s): uptime, last reset reason, Wi-Fi RSSI, satellites + HDOP, free heap, firmware version; the ACL allows it
+- [x] Unit liveness (with E6.3): healthy / degraded (no fix, weak signal, stale health) / offline (silent > 3 s)
+- [x] Server watchdogs: MQTT link, forecast refresh age, simulator activity, live ADS-B feed age, database writes, models loaded; each with a threshold and a state (`ok` / `warn` / `fail`); a state change is written to the event log and pushed to `/ws/ops`
+- [x] `/healthz` reports every watchdog (liveness stays cheap; `/healthz?deep=1` for the full report); stale inputs are flagged in API responses, never silently shown
+- [x] `scripts/fake_unit.py` sends health heartbeats too
+
+**Acceptance criteria**
+- Stopping the simulator, the broker, or the ADS-B feed turns its watchdog red within 30 s and back green on recovery
+- A unit with no GNSS fix shows degraded, not offline
+
+### E6.10 AeroLink Ops Dashboard
+
+The operations view of all low-altitude traffic, for AeroLink or vertiport operations staff (ARCHITECTURE §13.4). It is not an ATC system: it monitors and helps operators plan, and real ATC acts by radio.
+
+**Stories**
+- [x] `/ops` page (same web app, operator login, E6.15): all traffic by source (units, simulated, live ADS-B) and vehicle type
+- [x] Every active route with ETA windows, prediction cones and status; flight list with drill-down to track history (segments)
+- [x] Predicted congestion per corridor and site, +0 to +45 min
+- [x] Conflict list: predicted bunching / loss-of-separation risks between routes, ranked, highlighted on the map
+- [x] What-if routing: the route engine's alternatives for any flight from its current position, with the predicted time saved
+- [x] Fleet health table from E6.9; alerts and event log with per-operator acknowledge (audit-logged)
+- [x] System-health panel from the E6.9 watchdogs
+
+**Acceptance criteria**
+- An operator sees every active route and every live aircraft (all three sources; the simulated fleet includes parked on-ground tracks) on one screen without the command line
+- A developing conflict appears on the dashboard before the aircraft meet
+- The dashboard never gives a pilot an instruction; Ops can send an advisory reroute that the pilot may accept or decline; the only other things an operator changes are acknowledgements, the Ops "cleared / contacted" note (E6.14), and the system switches (method, forecaster, scenario)
+
+### E6.11 Live ADS-B Traffic
+
+Real aircraft over Central Florida in the live picture (adsb.lol live API, ODbL).
+
+**Stories**
+- [x] Poll the adsb.lol live API for the focus region; apply the E5.1 filters (low altitude, rotorcraft/light, no airline/heavy/military). Polling is adaptive because the public API allows 500 requests per 24 h: every 30 s while someone uses `/api/adsb`, `/api/ops/*` or `/ws/ops` (last 2 min), every 5 min otherwise, at most 450 requests per rolling 24 h (the interval stretches as the budget runs down); no API key
+- [x] Show them on the AeroLink Ops dashboard as background traffic, never routed
+- [x] Show them on the web map too: quiet grey markers with a heading tick and callsign, a layer toggle, nothing drawn when the feed is down (a small "ADS-B unavailable" note in the layers panel), ODbL credit once in the footer
+- [x] Feed them into the traffic forecast as background traffic (like off-route mass)
+- [x] Feed down or offline → watchdog alert and an "ADS-B unavailable" label; nothing else breaks
+- [x] ODbL attribution on every page that shows them
+
+**Acceptance criteria**
+- Live ADS-B aircraft appear on the next poll (30 s while the dashboard or map is open; longer when idle or when the daily budget runs low)
+- With no internet, the system runs and the dashboard's system panel shows the feed as not `ok` (feed states: `ok`, `stale`, `down`, `rate_limited`, `disabled`)
+
+### E6.12 Pilot UI (CarPlay-style)
+
+A cockpit-first redesign of the pilot screen (ARCHITECTURE §13.2). It looks like a car-navigation app, with no Apple assets, fonts or icons. Principle: minimalism, only what the pilot needs, nothing that distracts.
+
+**Stories**
+- [x] Landscape-first layout for a phone or tablet mounted in the cockpit (left panel, map on the right); portrait uses a bottom sheet
+- [x] Light, dark and auto themes, remembered per browser
+- [x] One primary thing per state: map with a "Where to?" button, route cards, then a navigation banner (next waypoint, ETA window, traffic ahead)
+- [x] Neutral site markers; red only for a problem; airspace drawn only where the route crosses it; short site names (at most two lines)
+- [x] "Faster route available" and "Off route, recalculating" banners; an "End" button (tap twice) that ends the flight (`POST /api/devices/{id}/flight/end`)
+- [x] Route-card badges "Recommended" (rank 1, lowest cost) and "Fastest" (shortest predicted time, cruise plus wait); display-only, the contract `label` is unchanged (`web/src/shared/labels.ts`)
+- [x] Callsign shown in the status view, from the unit's registry; an "Ops noted: ATC clearance obtained" line when Ops has noted the flight (E6.14)
+
+**Acceptance criteria**
+- Covered by the pilot Playwright projects: an iPhone 15 viewport, a landscape phone and a landscape iPad (`cd web && npm test`)
+- Nothing on the screen can change the vehicle type or the callsign
+
+### E6.13 AeroLink Ops Dashboard in STARS Style (superseded by E6.14)
+
+A first redesign of `/ops` after STARS conventions (dark scope, data blocks, leader lines, history dots). It was accepted and then replaced by E6.14 the same day, so its look no longer exists. The data and panels it showed (traffic, routes, conflicts, what-if, alerts, health) are E6.10's and carry over to E6.14.
+
+**Stories**
+- [x] Superseded by E6.14; nothing to build
+
+### E6.14 Ops CarPlay UI and Clearance Note
+
+The final `/ops` look and the Ops "handled" note (ARCHITECTURE §1, §13.4).
+
+**Stories**
+- [x] CarPlay-style map UI: light by default, with a Light / Dark / Auto appearance setting remembered per browser
+- [x] Left sidebar of every active flight with its airspace requirement pill (No ATC, Contact tower (Class D), Contact approach (Class C), Clearance needed (Class B)), derived from the network's per-leg airspace flags; flights needing action sort first; filters All / Needs action / Medical
+- [x] A landing site's own airspace counts toward the requirement (landing inside Class B needs a clearance)
+- [x] An operator notes a flight Cleared (Class B) or Contacted (Class D / C), or undoes the note: `POST /api/ops/flights/{flight_id}/clearance`; each mark is audit-logged and stored as a `clearance` event
+- [x] The pilot sees the note as "Ops noted: ATC clearance obtained" (informational only: over `GET /api/devices/{id}` and the `clearance` WebSocket message; never over MQTT, never blocks Go)
+- [x] `GET /api/devices/{id}/atc-requirement?path=...` so route cards can say "Clearance needed (Class B)" before the pilot goes
+
+**Acceptance criteria**
+- A route that crosses only Class G shows "No ATC" and refuses a mark (409)
+- A mark only counts while its requirement equals the flight's current one; a revised route starts pending again
+- The pilot can start and fly any route whether or not Ops has noted it (AeroLink never blocks)
+
+### E6.15 Operator Login and Callsigns
+
+Real operator accounts instead of the shared basic-auth login for the AeroLink Ops dashboard, and a radio callsign for every aircraft.
+
+**Stories**
+- [x] Operator accounts with a CLI (`python -m aerolink.service.operators add|passwd|disable|enable|list`); scrypt password hashes, rate-limited login
+- [x] `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`; HTTP-only session cookie `aerolink_ops`, 12 h; `/login` page
+- [x] An operator session is required for `/api/ops/*`, `/api/alerts*`, `/ws/ops` and `PUT /api/method`, `/api/forecaster`, `/api/scenario` (migration 0005)
+- [x] Caddy: the dashboard paths skip basic auth (the app's own login protects them); a request with a valid operator cookie also reaches the shared read-only endpoints through `forward_auth`
+- [x] Callsign per unit in the registry (`python -m aerolink.service.devices add ... --callsign N123AL`, `set-callsign`), printed on the QR label; optional `callsign` in telemetry v4.1; simulated aircraft get `SIM-...` callsigns; Ops and the web map show callsigns
+- [x] `python -m aerolink.service.events purge` clears test alerts before a demo
+
+**Acceptance criteria**
+- Without an operator session the operator endpoints answer 401 and `/ws/ops` refuses the handshake (close code 4401)
+- A pilot never types or changes a callsign
+- Wrong passwords never say which part was wrong
+
+---
+
+## M7: Unit Hardware Design
+
+**Goal:** A reviewed wiring schematic and parts documentation the AeroLink unit is built from.
 **Exit criteria:** The schematic PDF and pin map are committed, reviewed, and match the firmware board config.
 
 ### E7.1 Parts and Datasheets
 
 **Stories**
-- [ ] Select parts: ESP32-S3-DevKitC-1 (N8R8), 3.5″ display module (prefer ST7796) with capacitive touch, microSD (module slot or breakout), ATGM336H GNSS with active antenna, demo push button
-- [ ] Confirm the display module's touch controller (FT6x36 capacitive vs XPT2046 resistive) before ordering; it decides the driver and whether pinch zoom works
-- [ ] Check whether the display module has a microSD slot and which pins it uses
+- [x] Select parts: ESP32-S3-DevKitC-1-N8R8 (built-in antenna), ATGM336H GNSS with active patch antenna, demo push button, red + blue LEDs with resistors
 - [ ] Add datasheets for every part to `hardware/datasheets/`
-- [ ] Check the 3.3 V power budget (backlight + GNSS + SD on the devkit regulator)
+- [ ] Confirm the GNSS module's supply range on arrival (powered from 3V3; JP1 allows 5 V)
 
 **Acceptance criteria**
 - Every part has a datasheet and an exact part number
@@ -634,31 +768,30 @@ Run the whole system with one command.
 ### E7.2 Wiring Schematic and Pin Map
 
 **Stories**
-- [ ] Assign pins, avoiding GPIO35–37 (memory) and handling the boot pins (0, 3, 45, 46)
-- [ ] Put the SD card on its own SPI host if pins allow; otherwise share the display bus with separate chip selects
-- [ ] Wire the demo button to a free GPIO with a pull-up
+- [x] Assign pins, avoiding GPIO35–37 (memory), the boot pins (0, 3, 45, 46), USB (19, 20), UART0 (43, 44), and the onboard RGB LED (38/48)
+- [x] Wire the demo button to a free GPIO with the internal pull-up; LEDs active high
 - [ ] Draw the KiCad schematic of the wiring in `hardware/kicad/rev0-wiring/`
 - [ ] Export the schematic PDF
 - [ ] Write the matching pin map in the firmware board config
-- [ ] Review the schematic
+- [ ] Run KiCad's electrical rules check and review the schematic
 
 **Acceptance criteria**
 - The firmware pin map and the schematic agree pin for pin
 
 ---
 
-## M8: Device
+## M8: Unit and Pilot Screen
 
-**Goal:** A handheld navigation device with a real pannable map that runs the full flow against the live system.
-**Exit criteria:** In Lakeland, the device shows its position on a pannable map; as Medical, "Where to?" lists helipads; Tampa General returns route options drawn on the map with ETA ranges and traffic; picking one shows `planned`; a "Faster route available" suggestion appears; the demo button switches to Passenger and the destination list changes to eVTOL sites.
+**Goal:** The AeroLink unit running the full flow against the live system, with a paired phone as the screen.
+**Exit criteria:** In Lakeland, the unit's position shows on a paired phone; as Medical, "Where to?" lists helipads; Tampa General returns route options drawn on the map with ETA ranges and traffic; picking one shows `planned`; a "Faster route available" suggestion appears; the demo button switches to Passenger, the LED turns blue, and the destination list changes to eVTOL sites; unplugging the unit locks routing on the phone.
 
 ### E8.1 Build and Bring-Up
 
 **Stories**
-- [ ] Wire Rev 0 exactly to the schematic
-- [ ] Verify the display, touch (including two-point reports), SD card, GNSS, button, and power
+- [ ] Solder the GNSS header pins; wire Rev 0 exactly to the schematic
+- [ ] Verify GNSS (fix, PPS), button, LEDs, and power from a USB power bank
 - [ ] Fix any mismatch in the schematic, not only in the wiring
-- [ ] Make it portable: soldered protoboard or secured jumpers on a printed tray
+- [ ] Portable first, with no aircraft connection: soldered protoboard or secured jumpers on a printed tray
 
 **Acceptance criteria**
 - All peripherals work, and the schematic reflects the build exactly
@@ -666,69 +799,56 @@ Run the whole system with one command.
 ### E8.2 Firmware Platform
 
 **Stories**
-- [ ] Start from the sukesh-ak/BSP-IDF5-ESP_LCD-LVGL9 template (ST7796 + FT5x06 + LVGL 9 on ESP32-S3)
-- [ ] Add registry components: `esp_lcd_st7796` (check the v1.5.0 licence or pin an earlier version), `esp_lcd_touch_ft5x06`, `esp_lvgl_port`
-- [ ] ESP-IDF project with a board abstraction
-- [ ] SD card over `sdspi` + FATFS
+- [ ] ESP-IDF project with a board abstraction matching the pin map
 - [ ] GNSS: position, fix quality, UTC time, based on ESP-IDF's `nmea0183_parser` example
 - [ ] GNSS replay mode with a recorded track, for indoor demos
-- [ ] Wi-Fi, MQTT over TLS (from the `esp-mqtt` `mqtt/ssl` example, CA embedded via `EMBED_TXTFILES`), Last Will
-- [ ] Telemetry at 1 Hz; out-of-region handling
+- [ ] Wi-Fi (2.4 GHz; credentials from menuconfig/NVS), MQTT over TLS (from the `esp-mqtt` `mqtt/ssl` example, CA embedded via `EMBED_TXTFILES`), `status` online/offline with Last Will
+- [ ] Telemetry at 1 Hz with the vehicle type; out-of-region fixes still sent
+- [ ] LEDs: colour = type; slow blink = no MQTT; fast blink = no GNSS fix
+- [ ] MQTT keepalive 5 s, so the Last Will fires within ~7.5 s of a silent drop (the backend watchdog is the primary check)
+- [ ] Layered, non-blocking reconnect *(from Microtransit_Tracking)*: Wi-Fi (event-driven, exponential backoff) → MQTT over TLS (esp-mqtt auto-reconnect, ≥5 s between attempts); GNSS reading and LEDs never block on the network
+- [ ] Send telemetry even without a fix (fix type `none`), so the backend still sees the unit as alive
+- [ ] Task watchdog (ESP-IDF TWDT) on the main tasks *(from Microtransit_Tracking)*: reboot on a hang; report the last reset reason in `status`
+- [ ] No credentials in source: Wi-Fi and MQTT secrets come from NVS via the provisioning script (or a git-ignored menuconfig default)
 
 **Acceptance criteria**
-- The device appears live on the web map, in both live-fix and replay modes
+- The unit appears live on the web map, in both live-fix and replay modes
+- The broker refuses the unit's publishes to any other unit's topics
+- Wi-Fi off for 2 min, then back: the unit reconnects on its own and the live position resumes within 10 s
+- A hung main task reboots the unit within 10 s
 
 ### E8.3 Vehicle-Type Key
 
-The device's vehicle type is part of its identity (ARCHITECTURE §14.3).
+The unit's vehicle type is part of its identity (ARCHITECTURE §14.3).
 
 **Stories**
 - [ ] Define the `VEHICLE_TYPE` field in a custom eFuse table (`EFUSE_BLK3`)
-- [ ] Read the type at boot; include it in every message
+- [ ] Read the type at boot; include it in every telemetry message
 - [ ] `CONFIG_AEROLINK_DEMO_MODE`: read the type from NVS instead, and let the button toggle passenger ↔ medical
-- [ ] Provisioning script that registers the device with the backend and, only with `--burn-efuse` and the MAC address, burns the type
+- [ ] Provisioning script: MQTT login (`mosquitto/add-device.sh`), registry entry (`aerolink.service.devices add`), pairing code + QR label, and, only with `--burn-efuse` and the MAC address, the eFuse
 - [ ] Document that the Rev 0 demo board is never burned
 
 **Acceptance criteria**
-- A non-demo build has no way to change the type from the UI
-- The backend rejects a non-demo device that sends a different type
-- The demo button changes the type and the destination list within 2 s
+- A non-demo build has no way to change the type
+- The backend rejects a non-demo unit that sends a different type
+- The demo button changes the type and the paired screen's destination list within 2 s
 
-### E8.4 Map View
-
-A real pannable, zoomable map on the device (ARCHITECTURE §13.2–13.3).
+### E8.4 End-to-End Flow
 
 **Stories**
-- [ ] Integrate `0015/map_tiles` (MIT, LVGL 9) reading tiles from the SD card, cached in PSRAM
-- [ ] Pan by drag; zoom with +/− buttons; pinch zoom if the touch controller reports two points
-- [ ] Draw overlays: device position, corridors coloured by traffic, landing sites for the vehicle type, nearby aircraft
-- [ ] Recenter / follow mode
-- [ ] Measure the panning frame rate at the chosen SPI clock
+- [ ] Pair a phone by QR; run the M8 exit-criteria flow against the live system
+- [ ] Measure: telemetry-to-screen latency, route-request-to-options latency
+- [ ] Test with the phone's hotspot as the unit's network
 
 **Acceptance criteria**
-- The map pans and zooms across the focus region without a network connection
-- Panning runs at 8 frames per second or better
-
-### E8.5 Device UI and Navigation Flow
-
-**Stories**
-- [ ] Screens: map (home), "Where to?", route options, navigate, status (LVGL)
-- [ ] Route request → options drawn on the map → Go → route selection → flight status
-- [ ] Traffic updates applied to the map every 5 s
-- [ ] "Faster route available" banner with Accept / Ignore
-- [ ] "Off route — recalculating"
-- [ ] Mark options and traffic stale after `expires_at`
-
-**Acceptance criteria**
-- A user can complete the whole flow on the touchscreen without instructions
-- The full flow works end to end against the live system
+- The full flow works end to end against the live system, twice in a row, without intervention
 
 ---
 
 ## M9: Deploy and Demo
 
 **Goal:** The system running in the cloud and a rehearsed demo.
-**Exit criteria:** The demo script runs end to end on the deployed system with the device in Lakeland.
+**Exit criteria:** The demo script runs end to end on the deployed system with the unit and a paired phone in Lakeland.
 
 ### E9.1 Cloud Deployment
 
@@ -752,8 +872,8 @@ A real pannable, zoomable map on the device (ARCHITECTURE §13.2–13.3).
 ### E9.3 Demo Readiness
 
 **Stories**
-- [ ] Test at the venue: GNSS by a window; Wi-Fi or hotspot on port 8883
-- [ ] Prepare a spare SD card with the tile set
+- [ ] Test at the venue: GNSS by a window; phone hotspot (2.4 GHz) on port 8883
+- [ ] Spare power bank and USB-C cable; a second paired phone as backup screen
 - [ ] Rehearse the [demo script](HACKATHON.md#demo-script-lakeland-6-minutes)
 - [ ] Record a backup demo video
 - [ ] Prepare judge credentials and links
@@ -765,23 +885,60 @@ A real pannable, zoomable map on the device (ARCHITECTURE §13.2–13.3).
 
 ## MVP Definition of Done
 
-All milestones M1–M9 are closed, and the demo runs end to end on the deployed system with the Rev 0 device.
+All milestones M1–M9 are closed, and the demo runs end to end on the deployed system with the Rev 0 unit and a paired phone.
 
 ---
 
 ## Post-MVP Backlog
 
-### Rev A Custom PCB
+### Deferred from the M5/M6 closeout
 
-Integrate the device onto a single custom board, starting from the M7 schematic.
+Known limitations and measured gaps, found while building and checking the system. None is hidden in the results.
 
 **Stories**
-- [ ] Integrate ESP32-S3-WROOM-1-N8R8, display + touch, microSD, ATGM336H, USB-C, AP63203 3.3 V buck (no demo button)
+- [ ] Telemetry retention: `TELEMETRY_RETENTION_DAYS` (7) is in `.env.example` and ARCHITECTURE §15 but no code reads it or purges old rows; add the purge job
+- [ ] Wait double-count: the route engine's predicted ETA adds the capacity model's predicted wait to an ETA that may already include some of it. About 5 s per flight on average (13 s in `fdot_high_peak`) according to the E1 investigation; reported, not changed
+- [ ] Departure-window calibration set size: the departure-time conformal calibration used 207 rows (1,034 departure samples in training); held-out departure coverage is 0.748 against the 80% target. Generate more departure samples (more seeds and scenarios) and re-measure
+- [ ] `traffic_ahead` approximation: the feature counts planned flights that share any node with the route, not the traffic that will actually be met along it; replace it with the traffic forecast's levels along the route
+- [ ] ADS-B feeder or API key: the public adsb.lol API allows 500 requests per 24 h (hence the adaptive polling); feed a receiver to adsb.lol or use a keyed feed for steady 5–10 s updates
+- [ ] Network densification: on the current network (6 eVTOL sites) route choice never differs between B1 and A5. Alternate routes cost more extra flight time than the predicted waits they avoid, so no suggestion fires in any committed scenario. More sites, more corridor alternatives and larger demand are needed before AI ranking can change outcomes
+- [ ] Simulator separation-probe latency: in the stress setup "egress without destination parking" (test only) one 0.24 m vertical shortfall (1 s) against the 150 m rule occurs at a corridor crossing, attributed to separation-probe latency. The committed scenarios have 0 loss-of-separation events; the limitation is documented, not fixed
+
+### Deferred from the Microtransit_Tracking review
+
+**Stories**
+- [ ] Unit store-and-forward: PSRAM ring buffer while offline, backfilled oldest first with `buffered: true`; backend sends backfill to history only
+- [ ] Per-unit `command` topic (backend → unit, retained): `identify` blink, telemetry rate
+- [ ] Display smoothing: constant-velocity Kalman filter in local metres, HDOP-driven noise, display only
+
+### Display Pack
+
+A unit with its own touchscreen, for pilots without a screen (ARCHITECTURE §14.7).
+
+**Stories**
+- [ ] Parts: 3.5″ ST7796 + FT6336U capacitive touch SPI module with microSD; confirm the touch controller before ordering
+- [ ] `aerolink.tiles`: render raster tiles from the shared basemap with TileServer GL (z5–z6 Florida, z7–z14 focus region); convert to LVGL RGB565 with the `0015/map_tiles` script
+- [ ] Export `network-device.json` (nodes, simplified edges, focus-region no-go outlines); SD-card image layout with a version file
+- [ ] Firmware: `esp_lcd_st7796`, `esp_lcd_touch_ft5x06`, `esp_lvgl_port`, `0015/map_tiles` map view (pan, pinch, overlays, follow mode)
+- [ ] LVGL screens matching the pilot page; uses the MQTT `route-request` / `route-selection` topics
+
+### Production Connectivity and Avionics
+
+**Stories**
+- [ ] Possible later option (not decided): mesh radio module (unlicensed ISM band, LoRa-style) in place of LTE, reaching the backend via a ground gateway (design to be decided); no cellular modem or data SIM (store-and-forward already comes from E8.2). Airborne use is pending counsel's review
+- [ ] GDL 90 position output so ForeFlight and Garmin Pilot show the unit with no AeroLink app
+
+### Rev A Custom PCB
+
+Integrate the unit onto a single custom board, starting from the M7 schematic.
+
+**Stories**
+- [ ] Integrate ESP32-S3-WROOM-1-N8R8, ATGM336H, LEDs, USB-C, AP63203 3.3 V buck, optional mesh radio module (no demo button)
 - [ ] Verify footprints against the datasheets
-- [ ] Layout: antenna keep-outs, ground plane, USB-C ESD; clean DRC/ERC
+- [ ] Layout: antenna keep-outs (Wi-Fi, GNSS, mesh radio), ground plane, USB-C ESD; clean DRC/ERC
 - [ ] Fab, assembly, and bring-up
 - [ ] Rev A board config (same firmware)
-- [ ] Rev A enclosure
+- [ ] Rev A enclosure with the QR label
 
 ---
 
@@ -802,14 +959,14 @@ Integrate the device onto a single custom board, starting from the M7 schematic.
 | OR-Tools CP-SAT modelling takes too long | Capacity model delayed | Greedy priority ordering fallback | E4.4 |
 | Trained model doesn't beat `cv` or `chronos` | Weaker AI story | Report as measured | E5.3 |
 | A5 doesn't beat B1 in some scenarios | Weaker claim | Report as measured; analyze why | E5.7 |
-| TileServer GL rendering setup (fonts, sprites, style) takes long | Device map delayed | Start early in M6; fall back to Protomaps' published style assets | E6.5 |
-| Tile set too large or slow to copy | SD prep slow | Drop z14 outside the corridors | E6.5 |
-| Map panning too slow over SPI | Poor device feel | Raise the SPI clock; partial redraws; PSRAM tile cache | E8.4 |
-| Touch controller doesn't report two points | No pinch zoom | +/− buttons always present | E8.4 |
 | eFuse burned on the demo board by mistake | Board stuck on one type | Provisioning script requires `--burn-efuse` + MAC | E8.3 |
-| `esp_lcd_st7796` v1.5.0 licence unclear | Licence risk | Check it, or pin an earlier Apache-2.0 version | E8.2 |
-| Display module has a different touch controller than expected | Wrong driver | Confirm before ordering | E7.1 |
 | Wiring doesn't match the schematic | Device bugs | Bring-up check; fix the schematic | E8.1 |
 | Breadboard fails while carried | Demo failure | Protoboard or secured tray | E8.1 |
-| Indoor GNSS or venue Wi-Fi fails | Demo failure | Replay mode; hotspot; map works offline from SD | E9.3 |
+| Indoor GNSS or venue Wi-Fi fails | Demo failure | Replay mode; phone hotspot (2.4 GHz) | E9.3 |
+| Unit can't see the phone hotspot | No connection | 2.4 GHz only: enable "Maximize Compatibility" (iPhone); keep the hotspot screen open | E8.4 |
+| GNSS module powered from the wrong rail | Dead module | Power from 3V3 by default; JP1 only for 5 V modules | E8.1 |
+| Loose GNSS header pins | Intermittent GNSS | Solder the headers; secure the antenna cable | E8.1 |
+| WebSocket blocked or dropped by the network | Screen stops updating | Page falls back to polling `/api/devices/{id}` | E6.8 |
+| Pairing code leaked (photo of the label) | Someone else controls the unit's screen | Rotate on re-provisioning; the pilot paths are open, so the code and the per-unit session cookie are the only protection; the web map keeps basic auth | E6.8 |
+| Docker image too large (CUDA torch wheels) | Slow builds and deploys | CPU-only torch index for the image | E6.7 |
 | LLM states wrong numbers | Misleading summary | Number check with template fallback | E5.6 |
