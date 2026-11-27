@@ -1,0 +1,118 @@
+# Container images (PLAN E6.7). Builds aerolink-backend (also used by `sim`) and aerolink-caddy (web page baked in)
+# for linux/amd64 on every PR and push to main. Pushes only on main: to GHCR always, and to Google Artifact
+# Registry too when the repository variables below are set. No deploy/CD here (the deployment method is a later decision).
+# Tags: <git sha> and `main`. The basemap is never baked in (compose mounts ./basemap).
+#
+# --- Pulling on the VM (GHCR; zero setup, images from a private repo are private) -----------------------
+#   docker login ghcr.io -u jr-cho          # password = a PAT with only `read:packages`
+#   IMAGE_REGISTRY=ghcr.io/jr-cho IMAGE_TAG=<sha> docker compose pull && \
+#   IMAGE_REGISTRY=ghcr.io/jr-cho IMAGE_TAG=<sha> docker compose up -d
+#   (compose names images ${IMAGE_REGISTRY}/aerolink-<name>:${IMAGE_TAG}; postgres/mosquitto stay official images)
+#
+# --- Optional Artifact Registry push: one-time gcloud setup (run by the repo owner; commands only) --------
+#   PROJECT_ID=<gcp-project>; REGION=<region, e.g. us-east1>; REPO=aerolink; GH_REPO=jr-cho/AeroLink
+#   gcloud artifacts repositories create $REPO --project=$PROJECT_ID --location=$REGION --repository-format=docker
+#   gcloud iam service-accounts create gh-aerolink-ci --project=$PROJECT_ID
+#   gcloud projects add-iam-policy-binding $PROJECT_ID \
+#     --member="serviceAccount:gh-aerolink-ci@$PROJECT_ID.iam.gserviceaccount.com" --role=roles/artifactregistry.writer
+#   gcloud iam workload-identity-pools create github --project=$PROJECT_ID --location=global
+#   gcloud iam workload-identity-pools providers create-oidc github-oidc --project=$PROJECT_ID --location=global \
+#     --workload-identity-pool=github --issuer-uri=https://token.actions.githubusercontent.com \
+#     --attribute-mapping='google.subject=assertion.sub,attribute.repository=assertion.repository' \
+#     --attribute-condition="assertion.repository=='$GH_REPO'"
+#   gcloud iam service-accounts add-iam-policy-binding gh-aerolink-ci@$PROJECT_ID.iam.gserviceaccount.com \
+#     --project=$PROJECT_ID --role=roles/iam.workloadIdentityUser \
+#     --member="principalSet://iam.googleapis.com/projects/$(gcloud projects describe $PROJECT_ID --format='value(projectNumber)')/locations/global/workloadIdentityPools/github/attribute.repository/$GH_REPO"
+# Then set these GitHub repository VARIABLES (Settings > Secrets and variables > Actions > Variables):
+#   GCP_PROJECT_ID, GCP_REGION, GAR_REPOSITORY (=$REPO),
+#   GCP_WIF_PROVIDER  (= projects/<number>/locations/global/workloadIdentityPools/github/providers/github-oidc),
+#   GCP_SERVICE_ACCOUNT (= gh-aerolink-ci@$PROJECT_ID.iam.gserviceaccount.com)
+# With any of them unset the Artifact Registry steps are skipped; GHCR is unaffected.
+#
+# Sources: https://github.com/docker/build-push-action, https://github.com/google-github-actions/auth
+name: Images
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: images-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Image ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write   # GHCR push (main only)
+      id-token: write   # Workload Identity Federation (Artifact Registry, optional)
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: backend, file: backend/Dockerfile }
+          - { name: caddy, file: caddy/Dockerfile }
+    env:
+      PUSH: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      GAR_READY: ${{ vars.GCP_PROJECT_ID != '' && vars.GCP_REGION != '' && vars.GAR_REPOSITORY != '' && vars.GCP_WIF_PROVIDER != '' && vars.GCP_SERVICE_ACCOUNT != '' }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Image names and tags
+        id: meta
+        run: |
+          owner="${GITHUB_REPOSITORY_OWNER,,}"            # GHCR paths must be lowercase
+          tags="ghcr.io/${owner}/aerolink-${{ matrix.name }}:${GITHUB_SHA}
+          ghcr.io/${owner}/aerolink-${{ matrix.name }}:main"
+          if [ "$PUSH" = "true" ] && [ "$GAR_READY" = "true" ]; then
+            gar="${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GAR_REPOSITORY }}/aerolink-${{ matrix.name }}"
+            tags="${tags}
+          ${gar}:${GITHUB_SHA}
+          ${gar}:main"
+          fi
+          { echo "tags<<EOF"; echo "$tags"; echo "EOF"; } >> "$GITHUB_OUTPUT"
+
+      - name: Log in to GHCR
+        if: env.PUSH == 'true'
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Authenticate to Google Cloud (Workload Identity Federation, no keys)
+        id: gcp
+        if: env.PUSH == 'true' && env.GAR_READY == 'true'
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          token_format: access_token
+
+      - name: Log in to Artifact Registry
+        if: env.PUSH == 'true' && env.GAR_READY == 'true'
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ${{ vars.GCP_REGION }}-docker.pkg.dev
+          username: oauth2accesstoken
+          password: ${{ steps.gcp.outputs.access_token }}
+
+      - name: Build image (pushed on main)
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: ${{ matrix.file }}
+          platforms: linux/amd64
+          push: ${{ env.PUSH == 'true' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,scope=${{ matrix.name }},mode=max

@@ -1,0 +1,111 @@
+# AeroLink: the whole system with one command (PLAN E6.7, ARCHITECTURE §11, §16).
+#   scripts/dev-setup.sh      # .env values, MQTT CA + accounts, dashboard password
+#   scripts/basemap.sh        # one-time basemap download into basemap/ (not baked into any image)
+#   docker compose up -d --build
+# Images are named ${IMAGE_REGISTRY:-local}/aerolink-<name>:${IMAGE_TAG:-dev}: `up --build` builds them locally;
+# on a server set IMAGE_REGISTRY/IMAGE_TAG (the CI pushes them to Artifact Registry) and `docker compose pull`.
+# The web page is baked into the caddy image (caddy/Dockerfile); see compose.override.example.yaml for dev.
+name: aerolink
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2  # keep in step with the image dev-setup uses for mosquitto_passwd: 2.0 cannot read 2.1 password hashes
+    restart: unless-stopped
+    ports:
+      - "8883:8883"            # devices: MQTT over TLS
+      - "127.0.0.1:1883:1883"  # internal listener, host loopback only (debugging)
+    volumes:
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto/acl:/mosquitto/config/acl:ro
+      - ./mosquitto/passwd:/mosquitto/config/passwd:ro
+      - ./mosquitto/certs:/mosquitto/certs:ro
+      - mosquitto-data:/mosquitto/data
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 1883"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-aerolink}
+      POSTGRES_USER: ${POSTGRES_USER:-aerolink}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: ${IMAGE_REGISTRY:-local}/aerolink-backend:${IMAGE_TAG:-dev}
+    restart: unless-stopped
+    env_file: .env
+    environment:  # container-side overrides of .env
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-aerolink}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-aerolink}
+      MQTT_HOST: mosquitto
+      MQTT_PORT: "1883"
+      MQTT_BACKEND_PASSWORD: ${MQTT_BACKEND_PASSWORD:?set MQTT_BACKEND_PASSWORD in .env}
+      OMP_NUM_THREADS: "1"  # torch + LightGBM each bring an OpenMP runtime; single-threaded avoids the macOS clash
+    ports:
+      - "127.0.0.1:8000:8000"  # direct API access from the host (debugging); public traffic goes via caddy
+    volumes:
+      - model-cache:/models/hf-cache  # Chronos weights (HF_HOME): downloaded once, not on every restart
+    healthcheck:  # same probe as the image's HEALTHCHECK, stated here so compose's service_healthy is explicit
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/healthz').status == 200 else 1)"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 90s  # migrations + model load
+    depends_on:
+      postgres: { condition: service_healthy }
+      mosquitto: { condition: service_healthy }
+
+  sim:
+    build:  # same image as backend (cached), so compose never tries to pull it
+      context: .
+      dockerfile: backend/Dockerfile
+    image: ${IMAGE_REGISTRY:-local}/aerolink-backend:${IMAGE_TAG:-dev}
+    restart: unless-stopped
+    command: ["python", "-m", "aerolink.sim.live", "--loop", "--scenario", "scenarios/${SIM_SCENARIO:-nominal_day}.yaml"]
+    env_file: .env
+    environment:
+      MQTT_HOST: mosquitto
+      MQTT_PORT: "1883"
+      MQTT_SIM_PASSWORD: ${MQTT_SIM_PASSWORD:?set MQTT_SIM_PASSWORD in .env}
+    healthcheck:
+      disable: true
+    depends_on:
+      backend: { condition: service_healthy }
+
+  caddy:
+    build:  # web page built in a node stage and baked in at /srv/web
+      context: .
+      dockerfile: caddy/Dockerfile
+    image: ${IMAGE_REGISTRY:-local}/aerolink-caddy:${IMAGE_TAG:-dev}
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      AEROLINK_DOMAIN: ${AEROLINK_DOMAIN:-localhost}
+      DASHBOARD_USER: ${DASHBOARD_USER:?set DASHBOARD_USER in .env}
+      DASHBOARD_PASSWORD_HASH: ${DASHBOARD_PASSWORD_HASH:?set DASHBOARD_PASSWORD_HASH in .env (caddy hash-password)}
+    volumes:
+      - ./basemap:/srv/basemap:ro
+      - caddy-data:/data
+    depends_on:
+      backend: { condition: service_healthy }
+
+volumes:
+  pgdata:
+  mosquitto-data:
+  caddy-data:
+  model-cache:

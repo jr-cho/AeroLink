@@ -1,0 +1,18 @@
+# Mosquitto ACL (PLAN E6.2). %u is the MQTT username; device usernames ARE aircraft ids.
+# Pattern rules apply to every client; a device can only use its own topics.
+pattern write aerolink/aircraft/%u/telemetry
+pattern write aerolink/aircraft/%u/status
+pattern write aerolink/aircraft/%u/health
+pattern write aerolink/aircraft/%u/route-request
+pattern write aerolink/aircraft/%u/route-selection
+pattern read aerolink/aircraft/%u/route-response
+pattern read aerolink/aircraft/%u/flight-status
+pattern read aerolink/aircraft/%u/traffic
+
+# Backend: everything.
+user backend
+topic readwrite aerolink/#
+
+# Simulator: its own namespace only, so the backend can trust the namespace as the source.
+user sim
+topic readwrite aerolink/sim/#

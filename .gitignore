@@ -83,3 +83,12 @@ airspace/source/
 
 # Basemap and device tile set (large; reproducible)
 basemap/
+
+# Local dev database (backend/aerolink-dev.db, sqlite)
+*.db
+compose.override.yaml
+
+# QR labels from device provisioning (contain pairing codes)
+labels/
+temp/
+.work/

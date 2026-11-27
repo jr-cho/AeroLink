@@ -1,0 +1,9 @@
+# Dev override: copy to compose.override.yaml (git-ignored; compose loads it automatically).
+# Serves the Caddyfile and web/dist from the working tree instead of the baked-in copies, so
+# `npm run build` in web/ (or editing caddy/Caddyfile + `docker compose restart caddy`) shows up without
+# rebuilding the image. For hot reload use `npm run dev` (Vite) instead of Caddy.
+services:
+  caddy:
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./web/dist:/srv/web:ro

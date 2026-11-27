@@ -1,0 +1,69 @@
+# Caddy (PLAN E6.7, ARCHITECTURE §16): HTTPS, basic auth, web page, basemap, /api and /ws -> backend.
+# AEROLINK_DOMAIN:
+#   localhost        locally trusted cert (default)
+#   example.org      Let's Encrypt
+#   :80              plain HTTP, for `tailscale serve` to terminate TLS in front (scripts/phone-https.sh)
+{$AEROLINK_DOMAIN} {
+	encode zstd gzip
+
+	# Who needs what (user decisions 2026-11-26):
+	#  * Open, no login at all: the pilot screen a phone opens by scanning a unit's QR code (protected by the unit's
+	#    pairing code and an HTTP-only per-unit session cookie instead): the page shell and static files, the basemap,
+	#    the public airspace layer, `/api/devices/*` and `/ws/devices/*` (`/api/devices/*` does NOT match the registry
+	#    list `/api/devices`).
+	#  * The ATC dashboard: `/login*`, `/ops*` (the page shell) and the operator API `/api/auth/*`, `/api/ops/*`,
+	#    `/api/alerts*`, `/ws/ops`. They skip basic auth because the app's own operator login (cookie `aerolink_ops`,
+	#    checked by the backend on every request) protects them.
+	#  * Everything else (the web map `/` and its API) keeps the hackathon basic auth, EXCEPT that a request carrying
+	#    the operator cookie is let through when the backend confirms the session (`forward_auth` -> /api/auth/me).
+	#    That is how the dashboard reads the shared endpoints (/api/state, /api/traffic, ...) without a second prompt.
+	#    The two path lists below must stay identical (a test checks it).
+	@session {
+		not path /healthz /device /device/* /assets/* /favicon.svg /basemap/* /api/airspace /api/ai /api/devices/* /ws/devices/* /login* /ops* /api/auth/* /api/ops/* /api/alerts* /ws/ops
+		header_regexp Cookie aerolink_ops=
+	}
+	@basic {
+		not path /healthz /device /device/* /assets/* /favicon.svg /basemap/* /api/airspace /api/ai /api/devices/* /ws/devices/* /login* /ops* /api/auth/* /api/ops/* /api/alerts* /ws/ops
+		not header_regexp Cookie aerolink_ops=
+	}
+	# One `route` so the checks run before every handler, in this order (a Caddyfile sorts bare directives, and
+	# `forward_auth` would otherwise run after the handlers).
+	route {
+		forward_auth @session backend:8000 {
+			uri /api/auth/me
+		}
+		basic_auth @basic {
+			{$DASHBOARD_USER} {$DASHBOARD_PASSWORD_HASH}
+		}
+
+		# Liveness for uptime checks: no auth.
+		handle /healthz {
+			reverse_proxy backend:8000
+		}
+
+		# REST API and the pilot WebSocket (reverse_proxy upgrades WebSocket connections itself).
+		handle /api/* {
+			reverse_proxy backend:8000
+		}
+		handle /ws/* {
+			reverse_proxy backend:8000
+		}
+
+		# Self-hosted basemap (PMTiles + glyphs + sprites). file_server answers the Range requests the
+		# pmtiles protocol sends; .pbf is not in Go's built-in type table, so set it explicitly.
+		handle /basemap/* {
+			root * /srv
+			@pbf path *.pbf
+			header @pbf Content-Type application/x-protobuf
+			header Cache-Control "public, max-age=86400"
+			file_server
+		}
+
+		# The built web page; /device/<id> and unknown client-side routes fall back to index.html.
+		handle {
+			root * /srv/web
+			try_files {path} /index.html
+			file_server
+		}
+	}
+}
