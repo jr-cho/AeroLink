@@ -1,0 +1,268 @@
+/* Pilot screen: a calm, glanceable cockpit map. Landscape first (phone or tablet on the dash); portrait uses a bottom sheet.
+   One accent colour (route blue); amber and red only when they mean something. System font stack, Lucide icons. */
+.pilot {
+  --panel: rgba(255, 255, 255, 0.9); --solid: #ffffff; --ink: #14181d; --muted: #6a7480; --line: rgba(20, 24, 29, 0.09);
+  --soft: rgba(20, 24, 29, 0.06); --accent: #0a84ff; --warn: #b26a00; --danger: #d92d20; --ok: #2e9e5b; --card: var(--solid);
+  --gap: 16px; --left: calc(env(safe-area-inset-left, 0px) + 16px); --top: calc(env(safe-area-inset-top, 0px) + 16px);
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  position: fixed; inset: 0; overflow: hidden; background: #eceee9; color: var(--ink); font-family: var(--font); font-size: 17px;
+  -webkit-text-size-adjust: 100%; -webkit-font-smoothing: antialiased;
+}
+.pilot.night {
+  --panel: rgba(30, 34, 40, 0.9); --solid: #262b32; --ink: #f2f4f7; --muted: #95a0ad; --line: rgba(255, 255, 255, 0.1);
+  --soft: rgba(255, 255, 255, 0.08); --accent: #4da3ff; --warn: #f0b24a; --danger: #ff6259; --ok: #4cc97e; color-scheme: dark; background: #12181f;
+}
+.pilot .map { position: absolute; inset: 0; }
+.pilot button, .pilot input { font: inherit; color: inherit; touch-action: manipulation; }
+.pilot button { cursor: pointer; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.ico { display: inline-flex; flex: none; } .ico svg { display: block; }
+.muted { color: var(--muted); }
+
+/* The panel: left column in landscape, bottom sheet in portrait. */
+.panel-col { position: absolute; z-index: 5; display: flex; flex-direction: column; gap: 10px; animation: slide-in 0.28s ease-out; pointer-events: none; }
+.panel-col > * { pointer-events: auto; }
+@media (orientation: landscape) {
+  .panel-col { left: var(--left); top: var(--top); bottom: 16px; width: min(420px, 35vw); min-width: 300px; }
+  .sheet { max-height: 100%; }
+}
+@media (orientation: portrait) {
+  .panel-col { left: 12px; right: 12px; bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); }
+  .sheet { max-height: 52vh; }
+}
+@keyframes slide-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.sheet { background: var(--panel); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); border-radius: 22px; padding: 14px; overflow-y: auto; overscroll-behavior: contain; box-shadow: 0 1px 0 var(--line), 0 6px 24px rgba(0, 0, 0, 0.14); min-height: 0; }
+.sheet:empty { display: none; }
+
+.offline { background: var(--danger); color: #fff; border-radius: 16px; padding: 12px 16px; display: flex; flex-direction: column; gap: 2px; }
+.offline[hidden] { display: none; }
+.offline strong { font-size: 20px; }
+
+/* Status: one small dot when everything is fine. */
+.status-dot { position: absolute; z-index: 6; top: var(--top); right: calc(env(safe-area-inset-right, 0px) + 12px); width: 48px; height: 48px; border-radius: 50%; border: 0; background: var(--panel); display: grid; place-items: center; box-shadow: 0 1px 0 var(--line), 0 3px 12px rgba(0, 0, 0, 0.14); }
+.status-dot i { width: 12px; height: 12px; border-radius: 50%; background: var(--ok); }
+.status-dot.warn i { background: var(--warn); } .status-dot.bad i { background: var(--danger); }
+.fab { position: absolute; z-index: 5; right: calc(env(safe-area-inset-right, 0px) + 12px); bottom: 20px; width: 56px; height: 56px; border-radius: 50%; border: 0; background: var(--panel); color: var(--accent); display: grid; place-items: center; box-shadow: 0 1px 0 var(--line), 0 3px 12px rgba(0, 0, 0, 0.14); }
+.fab[hidden] { display: none; }
+@media (orientation: portrait) { .fab { bottom: calc(52vh + 28px); } }
+.status-panel { position: absolute; z-index: 7; top: calc(var(--top) + 60px); right: calc(env(safe-area-inset-right, 0px) + 12px); width: min(380px, calc(100vw - 24px)); max-height: calc(100% - 90px); overflow-y: auto; background: var(--solid); border-radius: 20px; padding: 14px 16px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22); }
+.status-panel[hidden] { display: none; }
+.st-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); font-size: 15px; }
+.st-row strong { text-align: right; font-weight: 600; }
+.seg-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); font-size: 15px; }
+.segs { display: flex; background: var(--soft); border-radius: 12px; padding: 3px; }
+.seg { border: 0; background: none; border-radius: 10px; min-height: 44px; padding: 0 12px; font-size: 14px; }
+.seg.on { background: var(--solid); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); font-weight: 600; }
+
+.sheet-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.sheet-head h2 { margin: 0; font-size: 24px; font-weight: 700; min-width: 0; line-height: 1.15; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.round-btn { width: 48px; height: 48px; flex: none; border-radius: 50%; border: 0; background: var(--soft); display: grid; place-items: center; }
+.sheet-head .round-btn:last-child { margin-left: auto; }
+
+/* Buttons */
+.btn { border: 0; background: var(--soft); border-radius: 14px; padding: 12px 18px; min-height: 52px; font-size: 18px; font-weight: 600; }
+.btn.primary { background: var(--accent); color: #fff; }
+.btn.big { width: 100%; min-height: 60px; font-size: 20px; }
+.btn.small { min-height: 44px; padding: 6px 14px; font-size: 16px; }
+.btn:disabled { opacity: 0.45; }
+
+/* Idle */
+.home { display: flex; flex-direction: column; gap: 10px; }
+.searchbar { display: flex; align-items: center; gap: 10px; background: var(--soft); border-radius: 14px; padding: 0 14px; min-height: 56px; color: var(--muted); }
+.search { flex: 1; min-width: 0; border: 0; background: none; outline: none; font-size: 22px; font-weight: 600; color: var(--ink); min-height: 52px; }
+.search::placeholder { color: var(--ink); opacity: 0.85; }
+.search:disabled { opacity: 0.45; }
+.home.locked .searchbar { opacity: 0.55; }
+.dest-list { list-style: none; margin: 0; padding: 0; }
+.dest-list li:nth-child(n + 5) { display: none; }
+.sheet.expanded .dest-list li { display: block; }
+.dest-row { width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 8px 4px; min-height: 56px; font-size: 19px; }
+.dest-list li:last-child .dest-row { border-bottom: 0; }
+.dest-pin { color: var(--accent); }
+.dest-name { flex: 1; min-width: 0; font-weight: 600; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.dest-row .muted { font-size: 16px; white-space: nowrap; }
+.type-line { font-size: 13px; color: var(--muted); padding: 2px 4px 0; }
+.pad { padding: 10px 4px; }
+.offline-state { display: flex; flex-direction: column; gap: 4px; background: color-mix(in srgb, var(--danger) 14%, transparent); border-radius: 14px; padding: 12px 14px; }
+.offline-state strong { color: var(--danger); font-size: 20px; }
+
+/* Route options */
+.cards { display: flex; flex-direction: column; gap: 8px; }
+.route-card { border-radius: 16px; padding: 12px 14px; background: var(--soft); border: 2px solid transparent; transition: border-color 0.15s, background 0.15s; }
+.route-card.selected { border-color: var(--accent); background: var(--card); }
+.cards.stale .route-card { opacity: 0.55; filter: grayscale(1); }
+.rc-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.rc-time { font-size: 34px; line-height: 1.1; letter-spacing: -0.01em; }
+.rc-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { display: inline-block; border-radius: 999px; background: var(--soft); padding: 3px 10px; font-size: 13px; font-weight: 600; }
+.chip.recommended, .chip.fastest { color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.rc-line { display: flex; justify-content: space-between; gap: 8px; font-size: 16px; margin-top: 2px; flex-wrap: wrap; }
+.rc-traffic { color: var(--muted); } .rc-traffic.moderate { color: var(--warn); } .rc-traffic.heavy { color: var(--danger); }
+.rc-more { display: none; margin-top: 10px; }
+.route-card.selected .rc-more { display: block; }
+.rc-reason { font-size: 15px; margin-bottom: 10px; }
+.go { width: 100%; min-height: 60px; font-size: 22px; }
+.stale-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: color-mix(in srgb, var(--warn) 18%, transparent); border-radius: 14px; padding: 8px 12px; margin-bottom: 8px; }
+
+/* Navigating: next waypoint and ETA, nothing else until asked. */
+.sheet.nav { display: flex; flex-direction: column; gap: 10px; }
+.nav-main { display: flex; align-items: center; gap: 14px; background: var(--accent); color: #fff; border-radius: 18px; padding: 14px 16px; }
+.nav-main .muted { color: rgba(255, 255, 255, 0.85); }
+.cue { flex: none; }
+.nav-next { display: flex; flex-direction: column; min-width: 0; }
+.nav-next strong { font-size: 28px; line-height: 1.15; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
+.nav-next span { font-size: 17px; }
+.nav-bar { display: flex; gap: 8px; align-items: stretch; }
+/* End: red like CarPlay (user decision); armed = solid red "Tap to end". */
+.pilot .end-btn { flex: none; min-width: 84px; border: 0; border-radius: 16px; background: color-mix(in srgb, var(--danger) 14%, var(--solid)); color: var(--danger); font-size: 18px; font-weight: 700; padding: 0 18px; }
+.pilot .end-btn.armed { background: var(--danger); color: #fff; }
+.end-btn:disabled { opacity: 0.45; }
+.nav-strip { flex: 1; min-width: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; border: 0; background: var(--soft); border-radius: 16px; padding: 10px 16px; min-height: 56px; text-align: left; }
+.nav-strip { flex-direction: column !important; align-items: flex-start !important; justify-content: center !important; gap: 0 !important; }
+.nav-strip strong { white-space: nowrap; }
+.nav-strip .muted { font-size: 15px; white-space: nowrap; }
+.nav-strip strong { font-size: 32px; }
+.nav-details { display: flex; flex-direction: column; font-size: 16px; }
+.nav-details > div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 2px; border-top: 1px solid var(--line); }
+.nav-details strong.off_route { color: var(--danger); }
+.traffic-ahead { font-size: 17px; font-weight: 600; padding: 0 4px; }
+.traffic-ahead.quiet { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.traffic-ahead.moderate { color: var(--warn); } .traffic-ahead.heavy { color: var(--danger); }
+.banner { border-radius: 16px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; background: var(--card); }
+.banner.off { background: var(--danger); color: #fff; font-weight: 700; font-size: 20px; }
+.banner.faster strong { font-size: 20px; }
+.banner-actions { display: flex; gap: 8px; } .banner-actions .btn { flex: 1; }
+/* ATC requirement (E6.14): informational, amber while it is still to do, green once ATC marked it. */
+.atc-pill { align-self: flex-start; width: fit-content; border-radius: 999px; padding: 4px 12px; font-size: 14px; font-weight: 600; margin-top: 6px; background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+.atc-pill.done { background: color-mix(in srgb, var(--ok) 16%, transparent); color: var(--ok); }
+.sheet.nav .atc-pill { margin-top: 0; }
+/* AI mark: one small accent glyph on predictions and AI reasons (U-plan §D). */
+.ai-mark { display: inline-flex; align-items: center; gap: 0.2em; color: var(--accent); font-weight: 700; font-size: 0.9em; }
+.ai-mark .icon { width: 1em; height: 1em; }
+.arrived { display: flex; flex-direction: column; gap: 8px; } .arrived h2 { margin: 0; font-size: 28px; }
+
+/* Pairing */
+.pair-screen { position: absolute; inset: 0; background: var(--solid); padding: calc(env(safe-area-inset-top, 0px) + 40px) 24px 24px; display: flex; flex-direction: column; gap: 14px; max-width: 480px; margin: 0 auto; overflow-y: auto; }
+.pair-screen h1 { margin: 0; font-size: 28px; }
+.pair-logo { color: var(--accent); font-weight: 700; font-size: 18px; }
+.pair-input { font-size: 24px; letter-spacing: 0.1em; text-align: center; text-transform: uppercase; padding: 14px; border: 2px solid var(--line); border-radius: 14px; background: var(--soft); }
+.pair-error { color: var(--danger); min-height: 1.4em; margin: 0; }
+.pilot .maplibregl-ctrl-attrib, .pilot .attribution { font-size: 10px; opacity: 0.6; }
+.pilot.is-offline .map { filter: grayscale(0.6); }
+
+/* Full-screen navigation (CarPlay Maps-style, user decision): once the trip starts the panel card disappears; the map
+   fills the screen with one translucent guidance card at the top and one slim ETA bar (with the red End) at the bottom.
+   Everything between them is map, and stays pannable (the sheet itself lets touches through). */
+.sheet.nav:not(.ended) { background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 0;
+  overflow: visible; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; pointer-events: none; }
+.sheet.nav:not(.ended) > * { pointer-events: auto; }
+.panel-col:has(> .sheet.nav:not(.ended)) { top: var(--top); bottom: calc(env(safe-area-inset-bottom, 0px) + 16px); pointer-events: none; }
+.panel-col:has(> .sheet.nav:not(.ended)) > .sheet { flex: 1; max-height: none; }
+.nav-top, .nav-bottom { display: flex; flex-direction: column; gap: 8px; }
+.nav-top .nav-main { background: var(--panel); color: var(--ink); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+  box-shadow: 0 1px 0 var(--line), 0 6px 24px rgba(0, 0, 0, 0.16); border-radius: 20px; padding: 14px 18px; }
+.nav-top .nav-main .muted { color: var(--muted); }
+.nav-top .cue { color: var(--accent); }
+.nav-top .atc-pill { -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); background: color-mix(in srgb, var(--panel) 70%, color-mix(in srgb, var(--warn) 30%, transparent)); }
+.nav-top .atc-pill.done { background: color-mix(in srgb, var(--panel) 70%, color-mix(in srgb, var(--ok) 30%, transparent)); }
+.nav-top .traffic-ahead:not(.quiet) { align-self: flex-start; background: var(--panel); border-radius: 999px; padding: 4px 12px; font-size: 15px; }
+.nav-bottom .nav-bar { background: var(--panel); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); border-radius: 20px; padding: 6px;
+  box-shadow: 0 1px 0 var(--line), 0 6px 24px rgba(0, 0, 0, 0.16); }
+.nav-bottom .nav-strip { background: none; min-height: 52px; padding: 6px 12px; }
+.nav-bottom .nav-details { background: var(--panel); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); border-radius: 18px; padding: 4px 14px; }
+.nav-bottom .nav-details > div:first-child { border-top: 0; }
+.nav-msg { background: var(--panel); border-radius: 12px; padding: 6px 10px; margin: 0; }
+@media (orientation: landscape) { .panel-col:has(> .sheet.nav:not(.ended)) { width: min(380px, 34vw); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-col { animation: none; } .route-card { transition: none; }
+}
+
+/* ATC reroute (U-API contract §2): one calm card with two answers; the accent border marks it as a request, not an alarm. */
+.reroute { display: flex; flex-direction: column; gap: 8px; background: var(--card); border-radius: 20px; padding: 14px 16px; border: 2px solid var(--accent);
+  box-shadow: 0 1px 0 var(--line), 0 6px 24px rgba(0, 0, 0, 0.16); }
+.rr-head { font-size: 20px; }
+.rr-line { font-size: 17px; }
+.rr-reason { display: flex; align-items: center; gap: 4px; font-size: 16px; cursor: pointer; }
+.rr-reason-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rr-actions { display: flex; gap: 8px; }
+.rr-actions .btn { flex: 1; min-height: 56px; font-size: 19px; }
+
+/* AI disclaimer (U-API contract §3): one-time notice after pairing; one quiet advisory line elsewhere. */
+.ai-line { font-size: 14px; margin: 4px 2px 0; }
+.ai-notice { position: absolute; inset: 0; z-index: 20; background: rgba(0, 0, 0, 0.35); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.ai-notice-card { background: var(--solid); color: var(--ink); border-radius: 22px; padding: 22px 20px; max-width: 520px; width: 100%; display: flex; flex-direction: column; gap: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); max-height: 100%; overflow-y: auto; }
+.ai-notice-card h2 { margin: 0; font-size: 24px; }
+.ai-notice-card p { margin: 0; font-size: 17px; line-height: 1.35; }
+.ai-model { font-size: 16px; line-height: 1.3; } .ai-model strong { font-size: 17px; }
+.ai-model-name { font-size: 13px; }
+.ai-notice-card .st-row { padding: 6px 0; font-size: 15px; } .ai-notice-card .ai-model { padding-top: 2px; }
+
+/* QR connect (/device) and the scanner on the per-unit pair screen. */
+.scan-area { position: relative; display: flex; flex-direction: column; gap: 10px; }
+.scan-area .scan-video { display: block; width: 100%; height: min(42vh, 300px); object-fit: cover; border-radius: 18px; background: #000; }
+.scan-frame { position: absolute; left: 0; top: 0; width: 100%; height: min(42vh, 300px); border-radius: 18px; box-shadow: inset 0 0 0 3px #ffffff; pointer-events: none; }
+.scan-area { flex: none; }
+.connect-screen .btn.big { width: 100%; }
+.manual { display: flex; flex-direction: column; gap: 12px; }
+.manual-input { font-size: 20px; letter-spacing: 0.04em; text-transform: none; }
+
+/* `hidden` must win over the flex layouts above (a hidden panel is never shown). */
+.pilot [hidden] { display: none !important; }
+.connect-screen { gap: 10px; padding-top: calc(env(safe-area-inset-top, 0px) + 20px); }
+.connect-screen h1 { font-size: 24px; }
+
+/* Portrait: the status dot sits top-right; the guidance card (and the reroute card in it) keeps clear of it. */
+@media (orientation: portrait) { .panel-col:has(> .sheet.nav:not(.ended)) .nav-top { margin-right: 60px; } }
+/* AI sheet values never break mid-value ("61 s vs 104 s", "aerolink-gbm"). */
+.ai-notice-card .st-row strong { white-space: nowrap; }
+
+/* L-FIX: the pilot screen's standing labels. Small, muted, never over a control. */
+.atc-sub { display: block; font-size: 12px; font-weight: 500; opacity: 0.85; }
+.rr-sub { font-size: 14px; }
+.proto-note { margin: 0; font-size: 11px; line-height: 1.2; color: var(--muted); text-align: center; pointer-events: none; }
+.map-credit { position: absolute; right: calc(env(safe-area-inset-right, 0px) + 4px); bottom: 2px; z-index: 4; font-size: 10px; color: var(--muted); background: var(--panel); padding: 1px 6px; border-radius: 6px; pointer-events: auto; max-width: 70%; text-align: right; }
+.map-credit a { color: inherit; }
+.st-credit { font-size: 11px; color: var(--muted); padding: 6px 0 2px; }
+.st-credit .map-credit { position: static; background: none; padding: 0; text-align: left; max-width: none; font-size: 11px; }
+.rr-req { font-size: 15px; line-height: 1.25; }
+.sheet:not(.nav) .proto-note, .status-panel .proto-note { padding: 6px 0 2px; }
+.pilot-foot { display: flex; flex-direction: column; gap: 1px; pointer-events: none; }
+.pilot-foot .map-credit { position: static; background: none; padding: 0; max-width: none; text-align: center; font-size: 10px; pointer-events: auto; }
+/* In a scrolling sheet the notice and credit stay visible at its bottom edge (sticky), so a long list never pushes them out of sight. */
+.sheet:not(.nav) .pilot-foot { position: sticky; bottom: -14px; background: var(--solid); padding: 4px 0; margin-top: 4px; box-shadow: 0 -1px 0 var(--line); }
+
+/* Short screens (a phone held sideways, about 430 px high) while a reroute card is open: the card stays whole (answers and the
+   radio line never scroll away) and everything else gives way, so the guidance card becomes one compact line and
+   the End bar, the notice and the credit all fit without scrolling. */
+@media (max-height: 500px) {
+  .sheet.nav:not(.ended):has(#reroute) { gap: 4px; }
+  .sheet.nav:has(#reroute) .nav-top, .sheet.nav:has(#reroute) .nav-bottom { gap: 4px; }
+  .sheet.nav:has(#reroute) .reroute { padding: 8px 12px; gap: 4px; border-radius: 16px; }
+  .sheet.nav:has(#reroute) .rr-head { font-size: 16px; }
+  .sheet.nav:has(#reroute) .rr-line { font-size: 14px; }
+  .sheet.nav:has(#reroute) .rr-reason { font-size: 13px; }
+  .sheet.nav:has(#reroute) .rr-req { font-size: 13px; line-height: 1.2; }
+  .sheet.nav:has(#reroute) .rr-sub { font-size: 12px; line-height: 1.2; }
+  .sheet.nav:has(#reroute) .rr-actions .btn { min-height: 40px; font-size: 16px; }
+  .sheet.nav:has(#reroute) .nav-top .nav-main { padding: 6px 12px; gap: 8px; border-radius: 14px; }
+  .sheet.nav:has(#reroute) .cue .ico svg { width: 20px !important; height: 20px !important; }
+  .sheet.nav:has(#reroute) .nav-next { flex-direction: row; flex-wrap: wrap; align-items: baseline; column-gap: 8px; }
+  .sheet.nav:has(#reroute) .nav-next strong { font-size: 16px; -webkit-line-clamp: 1; }
+  .sheet.nav:has(#reroute) .nav-next span { font-size: 13px; }
+  .sheet.nav:has(#reroute) .atc-pill { padding: 4px 10px; font-size: 13px; }
+  .sheet.nav:has(#reroute) .atc-sub { display: inline; margin-left: 6px; font-size: 12px; }
+  .sheet.nav:has(#reroute) .nav-bottom .nav-strip { min-height: 40px; padding: 2px 10px; }
+  .sheet.nav:has(#reroute) .nav-strip strong { font-size: 20px; }
+  .sheet.nav:has(#reroute) .nav-strip .muted { font-size: 13px; }
+  .sheet.nav:has(#reroute) .nav-bar { padding: 4px; }
+  .sheet.nav:has(#reroute) .pilot-foot { overflow-wrap: anywhere; }
+}
+/* On the nav screen the notice and credit sit over the map: a soft panel behind them keeps them readable over route lines. */
+.nav-bottom .pilot-foot { background: var(--panel); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); border-radius: 10px; padding: 3px 8px; }
+/* Cut-off text: a small chevron at the end of the line says "tap for the whole text" (it opens a details sheet). */
+.cut-chev { flex: none; width: 1.1em; height: 1.1em; opacity: 0.7; }
+.cut[data-full] { position: relative; cursor: pointer; padding-right: 1.2em; }
+.cut[data-full] > .cut-chev { position: absolute; right: 0; bottom: 0.2em; }
+#detail-sheet .ai-notice-card p { margin: 0; }
