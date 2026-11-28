@@ -329,7 +329,7 @@ async def ops_conflicts(request: Request, horizon_min: float = 45.0) -> dict[str
 
 def _via(path: list[str], names: dict[str, str]) -> str:
     """The waypoints worth saying over the radio: the named sites on the way (else the last few nodes)."""
-    return " > ".join(names.get(n, n) for n in path)
+    return ", then ".join(names.get(n, n) for n in path)
 
 
 @router.get("/api/ops/whatif/{flight_id}", dependencies=[Depends(require_operator)])
