@@ -1,0 +1,17 @@
+/* The operator login: the dashboard's CarPlay look (light by default, dark when the appearance setting says so). */
+.login {
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --bg: #eceee9; --panel: #ffffff; --line: rgba(20, 24, 29, 0.12); --ink: #14181d; --muted: #6a7480; --accent: #0a84ff; --danger: #d92d20; --amber: #b26a00;
+  font-family: var(--font); color: var(--ink); background: var(--bg); font-size: 16px;
+  min-height: 100%; display: grid; place-items: center; padding: 24px 16px;
+}
+.login.night { --bg: #12181f; --panel: #262b32; --line: rgba(255, 255, 255, 0.12); --ink: #f2f4f7; --muted: #95a0ad; --accent: #4da3ff; --danger: #ff6259; --amber: #f0b24a; color-scheme: dark; }
+.login .card { width: min(100%, 360px); background: var(--panel); border-radius: 22px; padding: 26px 22px 22px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.16); }
+.login h1 { margin: 0 0 18px; font-size: 24px; font-weight: 700; }
+.login label { display: block; margin: 12px 0 4px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.login input { width: 100%; box-sizing: border-box; font: inherit; font-size: 17px; /* 16px+: no zoom on iOS */ color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; }
+.login input:focus-visible, .login button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.login .error { min-height: 1.4em; margin: 12px 0 8px; color: var(--danger); font-size: 14px; }
+.login .notice { margin: -6px 0 6px; color: var(--amber); font-size: 14px; }
+.login .primary { width: 100%; font: inherit; font-weight: 600; color: #fff; background: var(--accent); border: 0; border-radius: 14px; padding: 13px; min-height: 48px; cursor: pointer; }
+.login .primary:disabled { opacity: .5; cursor: default; }
