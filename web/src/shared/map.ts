@@ -51,7 +51,7 @@ export function basemapStyle(hasBasemap: boolean): StyleSpecification {
       protomaps: {
         type: "vector",
         url: `pmtiles://${origin}${PMTILES_PATH}`,
-        attribution: "© OpenStreetMap contributors, Protomaps",
+        attribution: "Map data from OpenStreetMap and Protomaps",
       },
     },
     // The protomaps layer list already starts with its own "background" layer (a second one is a duplicate-id error
